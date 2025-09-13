@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sim</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      canvas {
+        display: block;
+        background: #1b1b1b;
+        width: 1000px;
+        height: 1000px;
+        border: 2px solid #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"><canvas id="canvas" height="1000" width="1000"></canvas></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
