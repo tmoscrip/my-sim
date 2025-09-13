@@ -1,17 +1,44 @@
-function draw() {
-  var canvas = document.getElementById("canvas");
-  if (canvas instanceof HTMLCanvasElement) {
-    var ctx = canvas.getContext("2d");
-    if (!ctx) return;
+import { getRandomGrey } from "./helpers";
+import { renderObjects } from "./render";
+import { motionSystem } from "./systems";
+import { addComponent, createObject, type WorldObject } from "./world-object";
 
-    var xc = canvas.width / 2;
-    var yc = canvas.height / 2;
+const canvas = document.querySelector("canvas")!;
+const ctx = canvas.getContext("2d")!;
 
-    ctx.beginPath();
-    ctx.arc(xc, yc, 50, 0, Math.PI * 2, true);
-    ctx.stroke();
-    ctx.fill();
-  }
+const objects: WorldObject[] = [];
+let nextId = 1;
+
+const seedCount = 30;
+for (let i = 0; i < seedCount; i++) {
+  const o = createObject(nextId++);
+  addComponent(o, "Position", {
+    x: 200 + Math.random() * 600,
+    y: 200 + Math.random() * 600,
+  });
+  addComponent(o, "Renderable", {
+    radius: 30 + Math.random() * 30,
+    colour: getRandomGrey(),
+  });
+  addComponent(o, "Velocity", {
+    vx: -100 + Math.random() * 200,
+    vy: -100 + Math.random() * 200,
+  });
+  objects.push(o);
 }
 
-draw();
+console.log("Added " + objects.length + " components");
+
+let last = performance.now();
+function loop() {
+  const now = performance.now();
+  const dt = Math.min(0.05, (now - last) / 1000); // clamp
+  last = now;
+
+  motionSystem(objects, dt, 1000, 1000);
+  renderObjects(ctx, objects);
+
+  requestAnimationFrame(loop);
+}
+
+loop();
