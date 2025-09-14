@@ -21,8 +21,8 @@ for (let i = 0; i < seedCount; i++) {
     colour: getRandomGrey(),
   });
   addComponent(o, "Velocity", {
-    vx: -100 + Math.random() * 200,
-    vy: -100 + Math.random() * 200,
+    x: -100 + Math.random() * 200,
+    y: -100 + Math.random() * 200,
   });
   objects.push(o);
 }

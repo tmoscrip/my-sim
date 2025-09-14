@@ -4,15 +4,14 @@ export type Components = {
   Render2D: Render2DComponent;
 };
 
-export type PositionComponent = {
+export type Vec2 = {
   x: number;
   y: number;
 };
 
-export type VelocityComponent = {
-  vx: number;
-  vy: number;
-};
+export type PositionComponent = Vec2;
+
+export type VelocityComponent = Vec2;
 
 export type Render2DComponent = {
   radius: number;
