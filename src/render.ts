@@ -1,31 +1,17 @@
-import type { WorldObject } from "./world-object";
+import { query, type WorldObject } from "./world-object";
 
 export function renderObjects(
   ctx: CanvasRenderingContext2D,
   objs: WorldObject[]
 ) {
   ctx.clearRect(0, 0, 1000, 1000);
-  for (const o of objs) {
+
+  const renderables = query(objs, "Position", "Render2D");
+  for (const o of renderables) {
     const pos = o.components.Position;
     const ren = o.components.Render2D;
-    if (!pos || !ren) {
-      continue;
-    }
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, ren.radius, 0, Math.PI * 2);
-    ctx.fillStyle = ren.colour;
-    ctx.fill();
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 5;
-    ctx.stroke();
-
-    const idFontSize = Math.max(10, Math.floor(ren.radius * 0.8));
-    ctx.font = `${idFontSize}px -apple-system, system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "white";
-    ctx.fillText(o.id.toString(), pos.x, pos.y);
+    o.components.Render2D.render(ctx, o);
 
     // Debug: draw heading arrow and speed label if Motion exists
     const mot = o.components.Motion;
@@ -53,6 +39,7 @@ export function renderObjects(
       const headLen = Math.max(6, Math.min(12, ren.radius * 0.4));
       const left = angle + Math.PI - 0.5;
       const right = angle + Math.PI + 0.5;
+      ctx.strokeStyle = "red";
       ctx.beginPath();
       ctx.moveTo(ex, ey);
       ctx.lineTo(ex + Math.cos(left) * headLen, ey + Math.sin(left) * headLen);
