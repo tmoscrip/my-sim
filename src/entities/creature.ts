@@ -82,7 +82,7 @@ export const Turtle: EntityFactory = {
       mode: "Wander",
       timeInMode: 0, // TODO: Default initial value
       desiredSpeed: 40 + Math.random() * 100, // px/s
-      turnRate: 4.0, // rad/s
+      turnRate: 8.0, // rad/s
       // seek tuning
       arriveDistance: 8,
       slowRadius: 20,

@@ -94,7 +94,7 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
 
         // Turn towards target with limited turn rate
         const delta = shortestAngleDiff(bearing, mot.heading);
-        const maxTurn = turnRate * dt;
+        const maxTurn = Math.abs(turnRate * dt);
         const step = clamp(delta, -maxTurn, maxTurn);
         mot.heading = wrapAngle(mot.heading + step);
 
