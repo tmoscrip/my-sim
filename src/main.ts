@@ -1,7 +1,7 @@
 import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
-import { providePassiveResourcesSystem } from "./systems/provide-passive-resources";
+import { consumeResourcesSystem } from "./systems/consume-resources";
 import { motionSystem } from "./systems/motion";
 import { steeringSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
@@ -17,16 +17,20 @@ const world: World = {
   systems: [
     seeksNeedsSystem,
     needsSystem,
-    providePassiveResourcesSystem,
+    consumeResourcesSystem,
     steeringSystem,
     motionSystem,
   ],
 };
 
 world.objects.push(FoodResource.create(world.nextId++));
+world.objects.push(FoodResource.create(world.nextId++));
+world.objects.push(FoodResource.create(world.nextId++));
+world.objects.push(WaterResource.create(world.nextId++));
+world.objects.push(WaterResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 5;
+const creatureCount = 20;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }

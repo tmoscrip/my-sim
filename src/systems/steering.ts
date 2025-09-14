@@ -37,10 +37,16 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
     let speedFactor = 1; // 1 = full desiredSpeed
     let idle = false;
 
+    beh.timeInMode += dt;
+
     switch (beh.mode) {
       case "Idle": {
-        idle = true;
-        // leave heading unchanged
+        if (beh.timeInMode > 3) {
+          beh.mode = "Wander";
+          beh.timeInMode = 0;
+        } else {
+          idle = true;
+        }
         break;
       }
 
@@ -96,6 +102,7 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
         if (dist <= arriveDist) {
           idle = true;
           beh.mode = "Idle";
+          beh.timeInMode = 0;
         } else {
           speedFactor = clamp(dist / slowRadius, 0, 1);
         }

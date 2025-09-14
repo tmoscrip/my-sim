@@ -11,7 +11,7 @@ function inRange2(
   return dx * dx + dy * dy <= radius2;
 }
 
-export function providePassiveResourcesSystem(objs: WorldObject[], dt: number) {
+export function consumeResourcesSystem(objs: WorldObject[], dt: number) {
   const providers = query(objs, "PassiveResourceProvider", "Position");
   const needers = query(objs, "Needs", "Position");
 

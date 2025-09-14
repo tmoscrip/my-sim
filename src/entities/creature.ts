@@ -76,6 +76,7 @@ export const Turtle: EntityFactory = {
     });
     addComponent(o, "Behaviour", {
       mode: "Wander",
+      timeInMode: 0, // TODO: Default initial value
       desiredSpeed: 40 + Math.random() * 100, // px/s
       turnRate: 4.0, // rad/s
       // seek tuning
@@ -92,8 +93,8 @@ export const Turtle: EntityFactory = {
         value: 80 + Math.random() * 20,
         min: 0,
         max: 100,
-        lossPerSecond: 20,
-        seekAtFraction: 0.3,
+        lossPerSecond: 7,
+        seekAtFraction: 0.2,
         satiatedAtFraction: 0.8,
       },
       {
@@ -101,9 +102,9 @@ export const Turtle: EntityFactory = {
         value: 80 + Math.random() * 20,
         min: 0,
         max: 100,
-        lossPerSecond: 5,
+        lossPerSecond: 3,
         seekAtFraction: 0.3,
-        satiatedAtFraction: 0.8,
+        satiatedAtFraction: 0.6,
       },
     ]);
     return o;

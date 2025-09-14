@@ -3,6 +3,7 @@ import type { Vec2 } from "../types";
 export type BehaviourMode = "Idle" | "Wander" | "Seek";
 export type BehaviourComponent = {
   mode: BehaviourMode;
+  timeInMode: number;
 
   // generic steering knobs
   desiredSpeed: number; // cruise px/s
