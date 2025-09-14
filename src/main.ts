@@ -24,7 +24,7 @@ const world: World = {
 world.objects.push(FoodResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 3;
+const creatureCount = 5;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }
@@ -49,6 +49,18 @@ function loop() {
 
   renderObjects(ctx, world.objects);
   requestAnimationFrame(loop);
+
+  logFps(now, dt, 5000);
+}
+
+function logFps(now: number, dt: number, intervalMillis = 1000) {
+  if (
+    Math.floor(now / intervalMillis) !==
+    Math.floor((now - dt * 1000) / intervalMillis)
+  ) {
+    const fps = Math.round(1 / dt);
+    console.log(`FPS: ${fps}`);
+  }
 }
 
 (async function init() {
