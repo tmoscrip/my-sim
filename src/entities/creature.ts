@@ -92,7 +92,7 @@ export const Turtle: EntityFactory = {
         value: 80 + Math.random() * 20,
         min: 0,
         max: 100,
-        lossPerSecond: 6,
+        lossPerSecond: 20,
         seekAtFraction: 0.3,
         satiatedAtFraction: 0.8,
       },

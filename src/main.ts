@@ -6,6 +6,7 @@ import { motionSystem } from "./systems/motion";
 import { steeringSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
+import { seeksNeedsSystem } from "./systems/seek-needs";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -14,6 +15,7 @@ const world: World = {
   objects: [],
   nextId: 1,
   systems: [
+    seeksNeedsSystem,
     needsSystem,
     providePassiveResourcesSystem,
     steeringSystem,
