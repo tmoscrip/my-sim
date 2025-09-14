@@ -23,26 +23,37 @@ export const Creature: EntityFactory = {
     addComponent(o, "Behaviour", {
       mode: "Wander",
       desiredSpeed: 80 + Math.random() * 60, // px/s
-      turnRate: 2.0, // rad/s
+      turnRate: 4.0, // rad/s
       // seek tuning
       arriveDistance: 8,
-      slowRadius: 120,
+      slowRadius: 60,
       // wander tuning
       wanderTurnInterval: 0.5,
       wanderJitter: 0.25, // small nudge in radians
       reverseChance: 0.02, // ~2% per second
     });
     addComponent(o, "Hunger", { value: 100, min: 0, max: 100, rate: 10 });
+    addComponent(o, "Thirst", { value: 100, min: 0, max: 100, rate: 5 });
     return o;
   },
 };
 
-export const Resource: EntityFactory = {
+export const FoodResource: EntityFactory = {
   create: (entityId: EntityId, radius: number = 200) => {
     var o = createObject(entityId);
     addComponent(o, "Position", { x: 400, y: 400 });
     addComponent(o, "Render2D", { radius: radius, colour: "green" });
     addComponent(o, "FoodProvider", { radius: radius, value: 20 });
+    return o;
+  },
+};
+
+export const WaterResource: EntityFactory = {
+  create: (entityId: EntityId, radius: number = 100) => {
+    var o = createObject(entityId);
+    addComponent(o, "Position", { x: 800, y: 800 });
+    addComponent(o, "Render2D", { radius: radius, colour: "blue" });
+    addComponent(o, "WaterProvider", { radius: radius, value: 50 });
     return o;
   },
 };

@@ -1,9 +1,11 @@
-import { Creature, Resource } from "./entity-types";
+import { Creature, FoodResource, WaterResource } from "./entity-types";
 import { renderObjects } from "./render";
+import { drinkingSystem } from "./systems/drinking";
 import { feedingSystem } from "./systems/feeding";
 import { hungerSystem } from "./systems/hunger";
 import { motionSystem } from "./systems/motion";
 import { steeringSystem } from "./systems/steering";
+import { thirstSystem } from "./systems/thirst";
 import { type WorldObject } from "./world-object";
 
 const canvas = document.querySelector("canvas")!;
@@ -12,7 +14,8 @@ const ctx = canvas.getContext("2d")!;
 const objects: WorldObject[] = [];
 let nextId = 1;
 
-objects.push(Resource.create(nextId++));
+objects.push(FoodResource.create(nextId++));
+objects.push(WaterResource.create(nextId++));
 
 const creatureCount = 5;
 for (let i = 0; i < creatureCount; i++) {
@@ -27,6 +30,9 @@ function loop() {
 
   hungerSystem(objects, dt);
   feedingSystem(objects, dt);
+
+  thirstSystem(objects, dt);
+  drinkingSystem(objects, dt);
 
   steeringSystem(objects, dt);
   motionSystem(objects, dt, 1000, 1000);

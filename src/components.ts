@@ -5,6 +5,8 @@ export type Components = {
   Behaviour: BehaviourComponent;
   Hunger: HungerComponent;
   FoodProvider: FoodProviderComponent;
+  Thirst: ThirstComponent;
+  WaterProvider: WaterProviderComponent;
 };
 
 export type Vec2 = {
@@ -51,6 +53,18 @@ export type HungerComponent = {
 };
 
 export type FoodProviderComponent = {
+  radius: number; // radius within which to provide food
+  value: number; // amount of food provided per second
+};
+
+export type ThirstComponent = {
+  value: number;
+  min: number;
+  max: number;
+  rate: number; // depletion rate per second
+};
+
+export type WaterProviderComponent = {
   radius: number; // radius within which to provide food
   value: number; // amount of food provided per second
 };

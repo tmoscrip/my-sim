@@ -101,5 +101,32 @@ export function renderObjects(
       ctx.fillStyle = "white";
       ctx.fillText(label, pos.x, barY + barHeight / 2);
     }
+
+    // Thirst bar under Hunger
+    const thi = o.components.Thirst;
+    if (thi) {
+      const barWidth = ren.radius * 2;
+      const barHeight = 8;
+      const barX = pos.x - barWidth / 2;
+      const baseY = pos.y + ren.radius + 4;
+      const barY = baseY + (hun ? barHeight + 2 : 0);
+
+      // Background
+      ctx.fillStyle = "black";
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+
+      // Foreground
+      const thirstPercent = thi.value / 100;
+      ctx.fillStyle = "blue";
+      ctx.fillRect(barX, barY, barWidth * thirstPercent, barHeight);
+
+      // Percent label
+      const label = Math.round(thi.value).toString();
+      ctx.font = `10px -apple-system, system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "white";
+      ctx.fillText(label, pos.x, barY + barHeight / 2);
+    }
   }
 }
