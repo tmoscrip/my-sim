@@ -7,6 +7,8 @@ import { steeringSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
+import { query } from "./world-object";
+import { PointerHighlight } from "./entities/pointer-highlight";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -34,6 +36,8 @@ const creatureCount = 20;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }
+
+world.objects.push(PointerHighlight.create(world.nextId++));
 
 // TODO: This breaks if an asset is added later
 const assetNames = Array.from(
@@ -68,6 +72,64 @@ function logFps(now: number, dt: number, intervalMillis = 1000) {
     console.log(`FPS: ${fps}`);
   }
 }
+
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  var pointers = query(world.objects, "PointerInput", "Position");
+  if (pointers.length === 0) return;
+  if (pointers.length > 1) {
+    console.warn("Multiple PointerInput components found, using the first one");
+  }
+  const position = pointers[0].components.Position;
+  const pointer = pointers[0].components.PointerInput;
+  position.x = x;
+  position.y = y;
+  pointer.isDown = e.buttons !== 0;
+  console.log(`Pointer at ${x}, ${y} (isDown: ${pointer.isDown})`);
+});
+
+// event listener for clicks
+canvas.addEventListener("click", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  var pointers = query(world.objects, "PointerInput", "Position");
+  if (pointers.length === 0) return;
+  if (pointers.length > 1) {
+    console.warn("Multiple PointerInput components found, using the first one");
+  }
+  const position = pointers[0].components.Position;
+  const pointer = pointers[0].components.PointerInput;
+  position.x = x;
+  position.y = y;
+  pointer.isDown = e.buttons !== 0;
+  console.log(`Pointer at ${x}, ${y} (isDown: ${pointer.isDown})`);
+});
+
+// event listener for clicks
+canvas.addEventListener("mousedown", (e) => {
+  var pointers = query(world.objects, "PointerInput", "Position");
+  if (pointers.length === 0) return;
+  if (pointers.length > 1) {
+    console.warn("Multiple PointerInput components found, using the first one");
+  }
+  const pointer = pointers[0].components.PointerInput;
+  pointer.isDown = true;
+});
+
+// mouse up event listener
+canvas.addEventListener("mouseup", (e) => {
+  var pointers = query(world.objects, "PointerInput", "Position");
+  if (pointers.length === 0) return;
+  if (pointers.length > 1) {
+    console.warn("Multiple PointerInput components found, using the first one");
+  }
+  const pointer = pointers[0].components.PointerInput;
+  pointer.isDown = false;
+});
 
 (async function init() {
   await preloadAssets(assetNames);

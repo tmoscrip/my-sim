@@ -10,6 +10,7 @@ import type { Render2DComponent } from "./render-2d";
 import type { BehaviourComponent } from "./behaviour";
 import type { NeedComponent } from "./needs";
 import type { PassiveResourceProvider } from "./passive-resource-provider";
+import type { PointerInputComponent } from "./pointer-input";
 
 export type Components = {
   Position: PositionComponent;
@@ -18,6 +19,7 @@ export type Components = {
   Behaviour: BehaviourComponent;
   Needs: NeedComponent;
   PassiveResourceProvider: PassiveResourceProvider;
+  PointerInput: PointerInputComponent;
 };
 
 export type ComponentKey = keyof Components;
