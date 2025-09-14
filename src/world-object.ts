@@ -29,7 +29,7 @@ export function removeComponent<K extends ComponentKey>(
   delete o.components[key];
 }
 
-export function hasAll<K extends readonly ComponentKey[]>(
+function hasAll<K extends readonly ComponentKey[]>(
   o: WorldObject,
   ...keys: K
 ): o is WorldObject & {
@@ -37,4 +37,11 @@ export function hasAll<K extends readonly ComponentKey[]>(
     typeof o.components;
 } {
   return keys.every((k) => k in o.components) as any;
+}
+
+export function query<K extends ComponentKey>(
+  objs: WorldObject[],
+  ...keys: K[]
+) {
+  return objs.filter((o) => hasAll(o, ...keys));
 }

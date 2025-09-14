@@ -17,7 +17,7 @@ let nextId = 1;
 objects.push(FoodResource.create(nextId++));
 objects.push(WaterResource.create(nextId++));
 
-const creatureCount = 5;
+const creatureCount = 10;
 for (let i = 0; i < creatureCount; i++) {
   objects.push(Creature.create(nextId++));
 }

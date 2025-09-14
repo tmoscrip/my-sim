@@ -1,5 +1,5 @@
 import type { WorldObject } from "../world-object";
-import { hasAll } from "../world-object";
+import { query } from "../world-object";
 
 const TAU = Math.PI * 2;
 
@@ -24,15 +24,14 @@ function randRange(min: number, max: number) {
 }
 
 export function steeringSystem(objs: WorldObject[], dt: number) {
-  for (const o of objs) {
-    if (!hasAll(o, "Position", "Motion", "Behaviour")) continue;
-
+  const movers = query(objs, "Position", "Motion", "Behaviour");
+  for (const o of movers) {
     const pos = o.components.Position;
     const mot = o.components.Motion;
     const beh = o.components.Behaviour;
 
-    const desiredSpeed = beh.desiredSpeed ?? 0;
-    const turnRate = beh.turnRate ?? 2.0; // rad/s
+    const desiredSpeed = beh.desiredSpeed;
+    const turnRate = beh.turnRate;
 
     // Mode-independent speed control (except Idle). These are set per-mode then applied once.
     let speedFactor = 1; // 1 = full desiredSpeed

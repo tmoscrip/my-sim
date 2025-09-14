@@ -1,18 +1,15 @@
-import { hasAll, type WorldObject } from "../world-object";
+import { query, type WorldObject } from "../world-object";
 
 const HUNGER_SEEK_FRACTION = 0.1;
 const HUNGER_SATIATED_FRACTION = 0.9;
 
 export function feedingSystem(objs: WorldObject[], dt: number) {
-  // Collect all providers with positions
-  const providers = objs.filter(
-    (o) => o.components.FoodProvider && o.components.Position
-  );
+  const providers = query(objs, "FoodProvider", "Position");
+  const eaters = query(objs, "Hunger", "Position", "Behaviour");
 
-  for (const o of objs) {
+  for (const o of eaters) {
     const hunger = o.components.Hunger;
     const pos = o.components.Position;
-    if (!hunger || !pos) continue;
 
     // Find nearest provider
     let nearest: WorldObject | undefined;
@@ -47,7 +44,6 @@ export function feedingSystem(objs: WorldObject[], dt: number) {
     // Steering: seek if hungry, wander otherwise
     const threshold = (hunger.max ?? 1) * HUNGER_SEEK_FRACTION;
     const behaviour = o.components.Behaviour!;
-    if (!behaviour) continue;
 
     if (hunger.value <= threshold && nearest) {
       const np = nearest.components.Position!;

@@ -1,19 +1,15 @@
-import type { WaterProviderComponent } from "../components";
-import { hasAll, type WorldObject } from "../world-object";
+import { query, type WorldObject } from "../world-object";
 
 const THIRST_SEEK_FRACTION = 0.1;
 const THIRST_SATIATED_FRACTION = 0.7;
 
 export function drinkingSystem(objs: WorldObject[], dt: number) {
-  // Collect all providers with positions
-  const providers = objs.filter(
-    (o) => o.components.WaterProvider && o.components.Position
-  );
+  const providers = query(objs, "WaterProvider", "Position");
+  const drinkers = query(objs, "Thirst", "Position", "Behaviour");
 
-  for (const o of objs) {
+  for (const o of drinkers) {
     const thirst = o.components.Thirst;
     const pos = o.components.Position;
-    if (!thirst || !pos) continue;
 
     // Find nearest provider
     let nearest: WorldObject | undefined;
@@ -48,7 +44,6 @@ export function drinkingSystem(objs: WorldObject[], dt: number) {
     // Steering: seek if thirsty, wander otherwise
     const threshold = (thirst.max ?? 1) * THIRST_SEEK_FRACTION;
     const behaviour = o.components.Behaviour!;
-    if (!behaviour) continue;
 
     if (thirst.value <= threshold && nearest) {
       const np = nearest.components.Position!;

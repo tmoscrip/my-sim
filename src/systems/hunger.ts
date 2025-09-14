@@ -1,7 +1,8 @@
-import type { WorldObject } from "../world-object";
+import { query, type WorldObject } from "../world-object";
 
 export function hungerSystem(objs: WorldObject[], dt: number) {
-  for (const o of objs) {
+  const eaters = query(objs, "Hunger", "Position");
+  for (const o of eaters) {
     const hunger = o.components.Hunger;
     if (!hunger) continue;
 

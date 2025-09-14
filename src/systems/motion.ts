@@ -1,4 +1,4 @@
-import type { WorldObject } from "../world-object";
+import { query, type WorldObject } from "../world-object";
 
 // Derived 2D motion system using heading (radians) and speed (px/s)
 export function motionSystem(
@@ -7,7 +7,8 @@ export function motionSystem(
   w = 1000,
   h = 1000
 ) {
-  for (const o of objs) {
+  const movers = query(objs, "Position", "Motion");
+  for (const o of movers) {
     const comps = o?.components ?? {};
     const pos = comps.Position;
     const mot = comps.Motion;
@@ -18,7 +19,7 @@ export function motionSystem(
     pos.y += Math.sin(mot.heading) * mot.speed * dt;
 
     // Bounce off bounds with reflection of heading
-    const r = comps.Render2D?.radius ?? 0;
+    const r = comps.Render2D?.radius ?? 0; // TODO: Motion shouldn't be coupled to rendering
     let bouncedX = false;
     let bouncedY = false;
 
