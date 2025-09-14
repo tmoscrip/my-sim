@@ -1,34 +1,64 @@
-import { hasAll, type WorldObject } from "../world-object";
+import { type WorldObject } from "../world-object";
+
+// Seek when hunger <= 40% of max (or <= 0.4 if no max provided)
+const HUNGER_SEEK_FRACTION = 0.2;
+const HUNGER_SATIATED_FRACTION = 0.8;
 
 export function feedingSystem(objs: WorldObject[], dt: number) {
+  // Collect all providers with positions
+  const providers = objs.filter(
+    (o) => o.components.FoodProvider && o.components.Position
+  );
+
   for (const o of objs) {
-    if (!hasAll(o, "Hunger", "Position")) continue;
+    const hunger = o.components.Hunger as any;
+    const pos = o.components.Position as any;
+    if (!hunger || !pos) continue;
 
-    // get all food providers
-    const foodProviders = objs.filter((obj) =>
-      hasAll(obj, "FoodProvider", "Position")
-    );
-
-    // for each food provider, if we're in range, eat some food
-    const hunger = o.components.Hunger;
-    const pos = o.components.Position;
-
-    for (const fp of foodProviders) {
-      const fpPos = fp.components.Position;
-      const fpComp = fp.components.FoodProvider;
-      if (!fpPos || !fpComp) continue;
-
-      const dx = fpPos.x - pos.x;
-      const dy = fpPos.y - pos.y;
-      const distSq = dx * dx + dy * dy;
-      const rangeSq = fpComp.radius * fpComp.radius;
-
-      if (distSq <= rangeSq) {
-        // in range to eat
-        const eatAmount = fpComp.value * dt;
-        hunger.value = Math.min(hunger.max, hunger.value + eatAmount);
-        // Optionally, you could also reduce the food provider's available food here
+    // Find nearest provider
+    let nearest: WorldObject | undefined;
+    let nearestDistSq = Infinity;
+    for (const p of providers) {
+      const pPos = p.components.Position as any;
+      const dx = pPos.x - pos.x;
+      const dy = pPos.y - pos.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < nearestDistSq) {
+        nearest = p;
+        nearestDistSq = d2;
       }
+    }
+
+    if (nearest) {
+      // If within provider radius, eat from it
+      const fp = nearest.components.FoodProvider!;
+      const pPos = nearest.components.Position!;
+      const dx = pPos.x - pos.x;
+      const dy = pPos.y - pos.y;
+      const d2 = dx * dx + dy * dy;
+      const radius = fp.radius ?? 0;
+      if (radius > 0 && d2 <= radius * radius && fp.value > 0) {
+        const feedRate = fp.value;
+        const eat = Math.min(fp.value, feedRate * dt);
+        const max = hunger.max ?? 1;
+        hunger.value = Math.min(max, hunger.value + eat);
+      }
+    }
+
+    // Steering: seek if hungry, wander otherwise
+    const threshold = (hunger.max ?? 1) * HUNGER_SEEK_FRACTION;
+    const steering = o.components.Behaviour as any;
+    if (!steering) continue;
+
+    if (hunger.value <= threshold && nearest) {
+      const np = nearest.components.Position as any;
+      steering.mode = "Seek";
+      steering.target = { x: np.x, y: np.y };
+    }
+
+    if (hunger.value >= (hunger.max ?? 1) * HUNGER_SATIATED_FRACTION) {
+      steering.mode = "Wander";
+      if (steering.target) delete steering.target;
     }
   }
 }
