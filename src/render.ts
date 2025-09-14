@@ -7,7 +7,7 @@ export function renderObjects(
   ctx.clearRect(0, 0, 1000, 1000);
   for (const o of objs) {
     const pos = o.components.Position;
-    const ren = o.components.Renderable;
+    const ren = o.components.Render2D;
     if (!pos || !ren) {
       continue;
     }

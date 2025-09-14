@@ -13,7 +13,7 @@ export function motionSystem(
       o.components.Position.y += o.components.Velocity.vy * dt;
 
       // bounce
-      const r = o.components.Renderable?.radius ?? 0;
+      const r = o.components.Render2D?.radius ?? 0;
       if (o.components.Position.x < r || o.components.Position.x > w - r)
         o.components.Velocity.vx *= -1;
       if (o.components.Position.y < r || o.components.Position.y > h - r)

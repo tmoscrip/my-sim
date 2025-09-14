@@ -1,7 +1,7 @@
 export type Components = {
   Position: PositionComponent;
   Velocity: VelocityComponent;
-  Renderable: RenderableComponent;
+  Render2D: Render2DComponent;
 };
 
 export type PositionComponent = {
@@ -14,7 +14,7 @@ export type VelocityComponent = {
   vy: number;
 };
 
-export type RenderableComponent = {
+export type Render2DComponent = {
   radius: number;
   colour: string;
 };

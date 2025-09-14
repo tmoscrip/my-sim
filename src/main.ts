@@ -16,7 +16,7 @@ for (let i = 0; i < seedCount; i++) {
     x: 200 + Math.random() * 600,
     y: 200 + Math.random() * 600,
   });
-  addComponent(o, "Renderable", {
+  addComponent(o, "Render2D", {
     radius: 30 + Math.random() * 30,
     colour: getRandomGrey(),
   });
