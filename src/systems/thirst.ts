@@ -6,6 +6,6 @@ export function thirstSystem(objs: WorldObject[], dt: number) {
     if (!thirst) continue;
 
     // Update thirst value based on elapsed time (depletes over time)
-    thirst.value = Math.max(0, thirst.value - thirst.rate * dt);
+    thirst.value = Math.max(0, thirst.value - thirst.lossPerSecond * dt);
   }
 }

@@ -29,8 +29,18 @@ export const Creature: EntityFactory = {
       wanderJitter: 0.25, // small nudge in radians
       reverseChance: 0.02, // ~2% per second
     });
-    addComponent(o, "Hunger", { value: 100, min: 0, max: 100, rate: 10 });
-    addComponent(o, "Thirst", { value: 100, min: 0, max: 100, rate: 5 });
+    addComponent(o, "Hunger", {
+      value: 80 + Math.random() * 20,
+      min: 0,
+      max: 100,
+      lossPerSecond: 6,
+    });
+    addComponent(o, "Thirst", {
+      value: 80 + Math.random() * 20,
+      min: 0,
+      max: 100,
+      lossPerSecond: 5,
+    });
     return o;
   },
 };

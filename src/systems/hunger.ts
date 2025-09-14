@@ -6,6 +6,6 @@ export function hungerSystem(objs: WorldObject[], dt: number) {
     if (!hunger) continue;
 
     // Update hunger value based on the elapsed time
-    hunger.value = Math.max(0, hunger.value - hunger.rate * dt);
+    hunger.value = Math.max(0, hunger.value - hunger.lossPerSecond * dt);
   }
 }
