@@ -1,6 +1,6 @@
 export type Components = {
   Position: PositionComponent;
-  Velocity: VelocityComponent;
+  Motion: MotionComponent;
   Render2D: Render2DComponent;
 };
 
@@ -11,7 +11,10 @@ export type Vec2 = {
 
 export type PositionComponent = Vec2;
 
-export type VelocityComponent = Vec2;
+export type MotionComponent = {
+  heading: number;
+  speed: number;
+};
 
 export type Render2DComponent = {
   radius: number;

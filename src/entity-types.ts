@@ -1,0 +1,34 @@
+import { getRandomGrey } from "./helpers";
+import { addComponent, createObject, type EntityId } from "./world-object";
+
+export type EntityFactory = {
+  create: (entityId: EntityId) => ReturnType<typeof createObject>;
+};
+
+export const Creature: EntityFactory = {
+  create: (entityId: EntityId) => {
+    var o = createObject(entityId);
+    addComponent(o, "Position", {
+      x: 200 + Math.random() * 600,
+      y: 200 + Math.random() * 600,
+    });
+    addComponent(o, "Render2D", {
+      radius: 30 + Math.random() * 30,
+      colour: getRandomGrey(),
+    });
+    addComponent(o, "Motion", {
+      heading: Math.random() * Math.PI * 2,
+      speed: 50 + Math.random() * 150,
+    });
+    return o;
+  },
+};
+
+export const Resource: EntityFactory = {
+  create: (entityId: EntityId) => {
+    var o = createObject(entityId);
+    addComponent(o, "Position", { x: 400, y: 400 });
+    addComponent(o, "Render2D", { radius: 70, colour: "green" });
+    return o;
+  },
+};
