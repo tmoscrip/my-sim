@@ -167,5 +167,17 @@ export function renderObjects(
       ctx.fillText(label, pos.x, pos.y + ren.radius / 2);
       ctx.restore();
     }
+
+    // Radius representing click box
+    if (o.components.Clickable) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, ren.radius + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = "yellow";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 2]);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 }

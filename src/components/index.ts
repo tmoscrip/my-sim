@@ -11,6 +11,7 @@ import type { BehaviourComponent } from "./behaviour";
 import type { NeedComponent } from "./needs";
 import type { PassiveResourceProvider } from "./passive-resource-provider";
 import type { PointerInputComponent } from "./pointer-input";
+import type { ClickableComponent } from "./clickable";
 
 export type Components = {
   Position: PositionComponent;
@@ -20,6 +21,7 @@ export type Components = {
   Needs: NeedComponent;
   PassiveResourceProvider: PassiveResourceProvider;
   PointerInput: PointerInputComponent;
+  Clickable: ClickableComponent;
 };
 
 export type ComponentKey = keyof Components;

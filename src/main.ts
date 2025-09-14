@@ -8,12 +8,12 @@ import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
 import { query } from "./world-object";
-import { PointerHighlight } from "./entities/pointer-highlight";
+import { PointerHighlight } from "./entities/pointer";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
 
-const world: World = {
+export const world: World = {
   objects: [],
   nextId: 1,
   systems: [
@@ -91,25 +91,6 @@ canvas.addEventListener("mousemove", (e) => {
   console.log(`Pointer at ${x}, ${y} (isDown: ${pointer.isDown})`);
 });
 
-// event listener for clicks
-canvas.addEventListener("click", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  var pointers = query(world.objects, "PointerInput", "Position");
-  if (pointers.length === 0) return;
-  if (pointers.length > 1) {
-    console.warn("Multiple PointerInput components found, using the first one");
-  }
-  const position = pointers[0].components.Position;
-  const pointer = pointers[0].components.PointerInput;
-  position.x = x;
-  position.y = y;
-  pointer.isDown = e.buttons !== 0;
-  console.log(`Pointer at ${x}, ${y} (isDown: ${pointer.isDown})`);
-});
-
-// event listener for clicks
 canvas.addEventListener("mousedown", (e) => {
   var pointers = query(world.objects, "PointerInput", "Position");
   if (pointers.length === 0) return;
@@ -117,10 +98,11 @@ canvas.addEventListener("mousedown", (e) => {
     console.warn("Multiple PointerInput components found, using the first one");
   }
   const pointer = pointers[0].components.PointerInput;
+  const pos = pointers[0].components.Position;
   pointer.isDown = true;
+  pointer.onClick(pos.x, pos.y);
 });
 
-// mouse up event listener
 canvas.addEventListener("mouseup", (e) => {
   var pointers = query(world.objects, "PointerInput", "Position");
   if (pointers.length === 0) return;

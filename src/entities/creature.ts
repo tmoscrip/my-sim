@@ -53,7 +53,6 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
 export const Turtle: EntityFactory = {
   create: (entityId: EntityId) => {
     var o = createObject(entityId);
-    o.debug = true;
 
     addComponent(o, "Position", {
       x: 200 + Math.random() * 600,
@@ -69,6 +68,11 @@ export const Turtle: EntityFactory = {
         xOffsetPx: 0,
       },
       render: render,
+    });
+    addComponent(o, "Clickable", {
+      onClick: () => {
+        o.debug = !o.debug;
+      },
     });
     addComponent(o, "Motion", {
       heading: Math.random() * Math.PI * 2,

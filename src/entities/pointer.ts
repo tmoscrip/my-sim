@@ -1,10 +1,32 @@
-import { type EntityId, createObject, addComponent } from "../world-object";
+import { world } from "../main";
+import {
+  type EntityId,
+  createObject,
+  addComponent,
+  query,
+} from "../world-object";
 import type { EntityFactory } from "./types";
 
 export const PointerHighlight: EntityFactory = {
   create: (entityId: EntityId) => {
     const pointerInput = createObject(entityId);
-    addComponent(pointerInput, "PointerInput", { isDown: false });
+    addComponent(pointerInput, "PointerInput", {
+      isDown: false,
+      onClick: (x, y) => {
+        query(world.objects, "Clickable", "Render2D", "Position").forEach(
+          (p) => {
+            const pos = p.components.Position;
+            const ren = p.components.Render2D;
+            // if click happened inside radius, call onClick
+            const dx = pos.x - x;
+            const dy = pos.y - y;
+            if (dx * dx + dy * dy <= ren.radius * ren.radius) {
+              p.components.Clickable?.onClick();
+            }
+          }
+        );
+      },
+    });
     addComponent(pointerInput, "Position", { x: 0, y: 0 });
     addComponent(pointerInput, "Render2D", {
       radius: 5,
