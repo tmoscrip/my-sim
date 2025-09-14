@@ -19,7 +19,7 @@ export const Creature: EntityFactory = {
     });
     addComponent(o, "Behaviour", {
       mode: "Wander",
-      desiredSpeed: 80 + Math.random() * 60, // px/s
+      desiredSpeed: 40 + Math.random() * 100, // px/s
       turnRate: 4.0, // rad/s
       // seek tuning
       arriveDistance: 8,
