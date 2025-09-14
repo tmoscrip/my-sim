@@ -2,8 +2,8 @@
 export function motionSystem(
   objs: Array<{ components: any }>,
   dt: number,
-  w = 800,
-  h = 800
+  w = 1000,
+  h = 1000
 ) {
   for (const o of objs) {
     const comps = o?.components ?? {};
