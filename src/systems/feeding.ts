@@ -1,8 +1,7 @@
 import { type WorldObject } from "../world-object";
 
-// Seek when hunger <= 40% of max (or <= 0.4 if no max provided)
-const HUNGER_SEEK_FRACTION = 0.2;
-const HUNGER_SATIATED_FRACTION = 0.8;
+const HUNGER_SEEK_FRACTION = 0.1;
+const HUNGER_SATIATED_FRACTION = 0.9;
 
 export function feedingSystem(objs: WorldObject[], dt: number) {
   // Collect all providers with positions

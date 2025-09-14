@@ -34,34 +34,23 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
     const desiredSpeed = beh.desiredSpeed ?? 0;
     const turnRate = beh.turnRate ?? 2.0; // rad/s
 
+    // Mode-independent speed control (except Idle). These are set per-mode then applied once.
+    let speedFactor = 1; // 1 = full desiredSpeed
+    let idle = false;
+
     switch (beh.mode) {
       case "Idle": {
-        mot.speed = 0;
-        // optionally bleed rotational jitter to zero; we leave heading as-is.
+        idle = true;
+        // leave heading unchanged
         break;
       }
 
       case "Wander": {
-        // Cruise around desired speed with slight fluctuation (±15%)
-        const cruise = desiredSpeed;
-        if (cruise > 0) {
-          const prev = Math.max(0, mot.speed ?? cruise);
-          let f = prev / cruise; // current speed factor
-          const theta = 1.5; // mean reversion rate (1/s)
-          const sigma = 0.12; // noise strength
-          const noise = randRange(-1, 1);
-          f += theta * (1 - f) * dt + sigma * Math.sqrt(dt) * noise;
-          f = clamp(f, 0.85, 1.15);
-          mot.speed = cruise * f;
-        } else {
-          mot.speed = 0;
-        }
-
+        // Heading jitter only (speed handled after switch)
         const interval = beh.wanderTurnInterval;
         const jitter = beh.wanderJitter; // radians
         const reverseChance = beh.reverseChance;
 
-        // Apply small heading nudge only if both interval and jitter are provided and valid
         if (
           typeof interval === "number" &&
           interval > 0 &&
@@ -73,7 +62,6 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
           }
         }
 
-        // Apply occasional 180° turn only if reverseChance is provided and > 0
         if (typeof reverseChance === "number" && reverseChance > 0) {
           if (Math.random() < reverseChance * dt) {
             mot.heading = wrapAngle(mot.heading + Math.PI);
@@ -85,8 +73,7 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
 
       case "Seek": {
         if (!beh.target) {
-          // No target: default to Idle
-          mot.speed = 0;
+          idle = true;
           break;
         }
 
@@ -106,18 +93,35 @@ export function steeringSystem(objs: WorldObject[], dt: number) {
         const step = clamp(delta, -maxTurn, maxTurn);
         mot.heading = wrapAngle(mot.heading + step);
 
-        // Speed: slow down when close, stop when arrived
+        // Set speed factor based on distance; arrive -> idle
         if (dist <= arriveDist) {
-          mot.speed = 0;
-          // Optionally switch to Idle to stop steering
+          idle = true;
           beh.mode = "Idle";
         } else {
-          const slowFactor = clamp(dist / slowRadius, 0, 1);
-          mot.speed = desiredSpeed * slowFactor;
+          speedFactor = clamp(dist / slowRadius, 0, 1);
         }
 
         break;
       }
+    }
+
+    // Apply shared speed logic (independent of mode, except Idle)
+    if (!idle) {
+      const cruise = desiredSpeed * speedFactor;
+      if (cruise > 0) {
+        const prev = Math.max(0, mot.speed ?? cruise);
+        let f = prev / cruise; // current speed factor
+        const theta = 1.5; // mean reversion rate (1/s)
+        const sigma = 0.12; // noise strength
+        const noise = randRange(-1, 1);
+        f += theta * (1 - f) * dt + sigma * Math.sqrt(dt) * noise;
+        f = clamp(f, 0.85, 1.15);
+        mot.speed = cruise * f;
+      } else {
+        mot.speed = 0;
+      }
+    } else {
+      mot.speed = 0;
     }
   }
 }
