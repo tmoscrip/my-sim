@@ -1,4 +1,4 @@
-import { Creature, FoodResource, WaterResource } from "./entity-types";
+import { Creature, FoodResource, WaterResource } from "./entities";
 import { renderObjects } from "./render";
 import { drinkingSystem } from "./systems/drinking";
 import { feedingSystem } from "./systems/feeding";

@@ -1,4 +1,4 @@
-import type { ComponentKey, Components } from "./components";
+import type { ComponentKey, Components } from "./components/components";
 
 export type EntityId = number;
 

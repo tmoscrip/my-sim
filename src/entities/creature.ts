@@ -1,9 +1,6 @@
-import { getRandomGrey } from "./helpers";
-import { addComponent, createObject, type EntityId } from "./world-object";
-
-export type EntityFactory = {
-  create: (entityId: EntityId) => ReturnType<typeof createObject>;
-};
+import { getRandomGrey } from "../helpers";
+import { addComponent, createObject, type EntityId } from "../world-object";
+import type { EntityFactory } from "./types";
 
 export const Creature: EntityFactory = {
   create: (entityId: EntityId) => {
@@ -34,26 +31,6 @@ export const Creature: EntityFactory = {
     });
     addComponent(o, "Hunger", { value: 100, min: 0, max: 100, rate: 10 });
     addComponent(o, "Thirst", { value: 100, min: 0, max: 100, rate: 5 });
-    return o;
-  },
-};
-
-export const FoodResource: EntityFactory = {
-  create: (entityId: EntityId, radius: number = 200) => {
-    var o = createObject(entityId);
-    addComponent(o, "Position", { x: 400, y: 400 });
-    addComponent(o, "Render2D", { radius: radius, colour: "green" });
-    addComponent(o, "FoodProvider", { radius: radius, value: 20 });
-    return o;
-  },
-};
-
-export const WaterResource: EntityFactory = {
-  create: (entityId: EntityId, radius: number = 100) => {
-    var o = createObject(entityId);
-    addComponent(o, "Position", { x: 800, y: 800 });
-    addComponent(o, "Render2D", { radius: radius, colour: "blue" });
-    addComponent(o, "WaterProvider", { radius: radius, value: 50 });
     return o;
   },
 };
