@@ -1,3 +1,3 @@
 export type { EntityFactory } from "./types";
 export { Turtle } from "./creature";
-export { FoodResource, WaterResource } from "./resourceProvider";
+export { FoodResource, WaterResource } from "./resource-provider";

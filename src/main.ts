@@ -1,7 +1,7 @@
-import type { AssetDetails } from "./components/render2d";
+import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
-import { providePassiveResourcesSystem } from "./systems/providePassiveResources";
+import { providePassiveResourcesSystem } from "./systems/provide-passive-resources";
 import { motionSystem } from "./systems/motion";
 import { steeringSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";

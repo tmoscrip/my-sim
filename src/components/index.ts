@@ -1,17 +1,17 @@
 export type { Vec2 } from "./types";
 export type { PositionComponent } from "./position";
 export type { MotionComponent } from "./motion";
-export type { Render2DComponent } from "./render2d";
+export type { Render2DComponent } from "./render-2d";
 export type { BehaviourMode, BehaviourComponent } from "./behaviour";
-export type { PassiveResourceProvider as FoodProviderComponent } from "./passiveResourceProvider";
+export type { PassiveResourceProvider } from "./passive-resource-provider";
 export type { ThirstComponent } from "./thirst";
 
 import type { PositionComponent } from "./position";
 import type { MotionComponent } from "./motion";
-import type { Render2DComponent } from "./render2d";
+import type { Render2DComponent } from "./render-2d";
 import type { BehaviourComponent } from "./behaviour";
 import type { NeedComponent } from "./needs";
-import type { PassiveResourceProvider } from "./passiveResourceProvider";
+import type { PassiveResourceProvider } from "./passive-resource-provider";
 
 export type Components = {
   Position: PositionComponent;

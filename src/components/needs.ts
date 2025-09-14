@@ -1,4 +1,4 @@
-import type { Resources } from "./passiveResourceProvider";
+import type { Resources } from "./passive-resource-provider";
 
 export type NeedComponent = {
   name: Resources;
