@@ -1,10 +1,8 @@
-export type { Vec2 } from "./types";
 export type { PositionComponent } from "./position";
 export type { MotionComponent } from "./motion";
 export type { Render2DComponent } from "./render-2d";
 export type { BehaviourMode, BehaviourComponent } from "./behaviour";
 export type { PassiveResourceProvider } from "./passive-resource-provider";
-export type { ThirstComponent } from "./thirst";
 
 import type { PositionComponent } from "./position";
 import type { MotionComponent } from "./motion";
