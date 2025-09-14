@@ -6,7 +6,7 @@ export const FoodResource: EntityFactory = {
     var o = createObject(entityId);
     addComponent(o, "Position", { x: 400, y: 400 });
     addComponent(o, "Render2D", { radius: radius, colour: "green" });
-    addComponent(o, "FoodProvider", { radius: radius, value: 20 });
+    addComponent(o, "FoodProvider", { radius: radius, value: 40 });
     return o;
   },
 };

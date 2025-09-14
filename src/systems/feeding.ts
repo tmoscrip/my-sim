@@ -1,4 +1,4 @@
-import { type WorldObject } from "../world-object";
+import { hasAll, type WorldObject } from "../world-object";
 
 const HUNGER_SEEK_FRACTION = 0.1;
 const HUNGER_SATIATED_FRACTION = 0.9;
@@ -46,18 +46,18 @@ export function feedingSystem(objs: WorldObject[], dt: number) {
 
     // Steering: seek if hungry, wander otherwise
     const threshold = (hunger.max ?? 1) * HUNGER_SEEK_FRACTION;
-    const steering = o.components.Behaviour as any;
-    if (!steering) continue;
+    const behaviour = o.components.Behaviour!;
+    if (!behaviour) continue;
 
     if (hunger.value <= threshold && nearest) {
-      const np = nearest.components.Position as any;
-      steering.mode = "Seek";
-      steering.target = { x: np.x, y: np.y };
+      const np = nearest.components.Position!;
+      behaviour.mode = "Seek";
+      behaviour.target = { x: np.x, y: np.y };
     }
 
     if (hunger.value >= (hunger.max ?? 1) * HUNGER_SATIATED_FRACTION) {
-      steering.mode = "Wander";
-      if (steering.target) delete steering.target;
+      behaviour.mode = "Wander";
+      if (behaviour.target) delete behaviour.target;
     }
   }
 }

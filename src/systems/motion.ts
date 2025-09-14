@@ -1,6 +1,8 @@
+import type { WorldObject } from "../world-object";
+
 // Derived 2D motion system using heading (radians) and speed (px/s)
 export function motionSystem(
-  objs: Array<{ components: any }>,
+  objs: WorldObject[],
   dt: number,
   w = 1000,
   h = 1000

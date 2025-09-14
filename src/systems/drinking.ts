@@ -1,4 +1,5 @@
-import { type WorldObject } from "../world-object";
+import type { WaterProviderComponent } from "../components";
+import { hasAll, type WorldObject } from "../world-object";
 
 const THIRST_SEEK_FRACTION = 0.1;
 const THIRST_SATIATED_FRACTION = 0.7;
@@ -46,18 +47,18 @@ export function drinkingSystem(objs: WorldObject[], dt: number) {
 
     // Steering: seek if thirsty, wander otherwise
     const threshold = (thirst.max ?? 1) * THIRST_SEEK_FRACTION;
-    const steering = o.components.Behaviour as any;
-    if (!steering) continue;
+    const behaviour = o.components.Behaviour!;
+    if (!behaviour) continue;
 
     if (thirst.value <= threshold && nearest) {
-      const np = nearest.components.Position as any;
-      steering.mode = "Seek";
-      steering.target = { x: np.x, y: np.y };
+      const np = nearest.components.Position!;
+      behaviour.mode = "Seek";
+      behaviour.target = { x: np.x, y: np.y };
     }
 
     if (thirst.value >= (thirst.max ?? 1) * THIRST_SATIATED_FRACTION) {
-      steering.mode = "Wander";
-      if (steering.target) delete steering.target;
+      behaviour.mode = "Wander";
+      if (behaviour.target) delete behaviour.target;
     }
   }
 }
