@@ -3,6 +3,8 @@ export type Components = {
   Motion: MotionComponent;
   Render2D: Render2DComponent;
   Behaviour: BehaviourComponent;
+  Hunger: HungerComponent;
+  FoodProvider: FoodProviderComponent;
 };
 
 export type Vec2 = {
@@ -39,6 +41,18 @@ export type BehaviourComponent = {
   wanderTurnInterval?: number; // seconds between small heading jitters
   wanderJitter?: number; // radians per jitter
   reverseChance?: number; // chance per second to flip 180°
+};
+
+export type HungerComponent = {
+  value: number;
+  min: number;
+  max: number;
+  rate: number; // depletion rate per second
+};
+
+export type FoodProviderComponent = {
+  radius: number; // radius within which to provide food
+  value: number; // amount of food provided per second
 };
 
 export type ComponentKey = keyof Components;

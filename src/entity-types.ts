@@ -32,15 +32,17 @@ export const Creature: EntityFactory = {
       wanderJitter: 0.25, // small nudge in radians
       reverseChance: 0.02, // ~2% per second
     });
+    addComponent(o, "Hunger", { value: 100, min: 0, max: 100, rate: 3 });
     return o;
   },
 };
 
 export const Resource: EntityFactory = {
-  create: (entityId: EntityId) => {
+  create: (entityId: EntityId, radius: number = 200) => {
     var o = createObject(entityId);
     addComponent(o, "Position", { x: 400, y: 400 });
-    addComponent(o, "Render2D", { radius: 70, colour: "green" });
+    addComponent(o, "Render2D", { radius: radius, colour: "green" });
+    addComponent(o, "FoodProvider", { radius: radius, value: 10 });
     return o;
   },
 };
