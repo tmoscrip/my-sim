@@ -1,4 +1,4 @@
 export type { EntityFactory } from "./types";
-export { Creature } from "./creature";
+export { Turtle } from "./creature";
 export { FoodResource } from "./foodResource";
 export { WaterResource } from "./waterResource";

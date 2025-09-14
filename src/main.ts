@@ -1,5 +1,6 @@
-import { Creature, FoodResource, WaterResource } from "./entities";
-import { renderObjects } from "./render";
+import type { AssetDetails } from "./components/render2d";
+import { FoodResource, Turtle, WaterResource } from "./entities";
+import { preloadAssets, renderObjects } from "./render";
 import { drinkingSystem } from "./systems/drinking";
 import { feedingSystem } from "./systems/feeding";
 import { hungerSystem } from "./systems/hunger";
@@ -27,10 +28,20 @@ const world: World = {
 world.objects.push(FoodResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 10;
+const creatureCount = 100;
 for (let i = 0; i < creatureCount; i++) {
-  world.objects.push(Creature.create(world.nextId++));
+  world.objects.push(Turtle.create(world.nextId++));
 }
+
+// TODO: This breaks if an asset is added later
+const assetNames = Array.from(
+  new Set(
+    world.objects
+      .map((o) => o.components.Render2D?.asset)
+      .filter((a): a is AssetDetails => !!a)
+      .map((a) => a.path)
+  )
+);
 
 let last = performance.now();
 function loop() {
@@ -44,4 +55,7 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-loop();
+(async function init() {
+  await preloadAssets(assetNames);
+  loop();
+})();

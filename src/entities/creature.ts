@@ -1,4 +1,5 @@
 import { getRandomGrey } from "../helpers";
+import { getAssetSync } from "../render";
 import {
   addComponent,
   createObject,
@@ -28,6 +29,26 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
     ctx.restore();
   }
 
+  if (ren.asset) {
+    const r = ren.radius;
+    const img = getAssetSync(ren.asset.path);
+    if (img) {
+      ctx.save();
+      ctx.translate(pos.x, pos.y);
+      // Avoid negative scale; rotate 180° if you need the same flip
+      ctx.rotate(heading + Math.PI);
+      // Center image at origin
+      ctx.drawImage(
+        img,
+        -r + (ren.asset.xOffsetPx || 0),
+        -r + (ren.asset.yOffsetPx || 0),
+        r * 2,
+        r * 2
+      ); // TODO: Allow assets to be offset to account for non-square images
+      ctx.restore();
+    }
+  }
+
   const idFontSize = Math.max(8, Math.floor(ren.radius * 0.4));
   ctx.font = `${idFontSize}px -apple-system, system-ui, sans-serif`;
   ctx.textAlign = "center";
@@ -36,7 +57,7 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   ctx.fillText(o.id.toString(), pos.x, pos.y - ren.radius * 0.6);
 }
 
-export const Creature: EntityFactory = {
+export const Turtle: EntityFactory = {
   create: (entityId: EntityId) => {
     var o = createObject(entityId);
     addComponent(o, "Position", {
@@ -44,9 +65,12 @@ export const Creature: EntityFactory = {
       y: 200 + Math.random() * 600,
     });
     addComponent(o, "Render2D", {
-      radius: 30 + Math.random() * 30,
+      radius: 20 + Math.random() * 20,
       colour: getRandomGrey(),
-      character: "🐢",
+      asset: {
+        path: "turtle.svg",
+        yOffsetPx: -12,
+      },
       render: render,
     });
     addComponent(o, "Motion", {
