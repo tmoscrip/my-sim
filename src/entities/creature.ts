@@ -40,8 +40,8 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
       // Center image at origin
       ctx.drawImage(
         img,
-        -r + (ren.asset.xOffsetPx || 0),
-        -r + (ren.asset.yOffsetPx || 0),
+        -r + ren.asset.xOffsetPx,
+        -r + ren.asset.yOffsetPx,
         r * 2,
         r * 2
       );
@@ -64,7 +64,9 @@ export const Turtle: EntityFactory = {
       colour: getRandomGrey(),
       asset: {
         path: "turtle.svg",
+        // TODO: Provide 0/0 defaults somewhere
         yOffsetPx: -12,
+        xOffsetPx: 0,
       },
       render: render,
     });

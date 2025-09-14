@@ -2,8 +2,8 @@ import type { WorldObject } from "../world-object";
 
 export type AssetDetails = {
   path: string;
-  xOffsetPx?: number;
-  yOffsetPx?: number;
+  xOffsetPx: number;
+  yOffsetPx: number;
 };
 
 export type Render2DComponent = {
