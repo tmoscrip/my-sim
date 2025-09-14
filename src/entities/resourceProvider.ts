@@ -33,7 +33,32 @@ export const FoodResource: EntityFactory = {
       colour: "green",
       render: render,
     });
-    addComponent(o, "FoodProvider", { radius: radius, value: 40 });
+    addComponent(o, "PassiveResourceProvider", {
+      provides: ["Food"],
+      radius: radius,
+      providedPerSecond: 40,
+    });
+    return o;
+  },
+};
+
+export const WaterResource: EntityFactory = {
+  create: (entityId: EntityId, radius: number = 100) => {
+    var o = createObject(entityId);
+
+    const x = 200 + Math.random() * 600;
+    const y = 200 + Math.random() * 600;
+    addComponent(o, "Position", { x: x, y: y });
+    addComponent(o, "Render2D", {
+      radius: radius,
+      colour: "blue",
+      render: render,
+    });
+    addComponent(o, "PassiveResourceProvider", {
+      provides: ["Water"],
+      radius: radius,
+      providedPerSecond: 50,
+    });
     return o;
   },
 };

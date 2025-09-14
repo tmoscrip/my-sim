@@ -62,6 +62,41 @@ export function renderObjects(
     ctx.fillStyle = "white";
     ctx.fillText(o.id.toString(), pos.x, pos.y - ren.radius * 0.6);
 
+    // Needs bars below creature
+    const needs = o.components.Needs;
+    if (needs) {
+      for (const [idx, need] of needs.entries()) {
+        ctx.save();
+        const barWidth = ren.radius * 2;
+        const barHeight = 8;
+        const barX = pos.x - barWidth / 2;
+        const barY = pos.y + ren.radius + 4 + idx * (barHeight + 2);
+
+        // Background
+        ctx.fillStyle = "black";
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // Foreground
+        const hungerPercent = need.value / 100;
+        ctx.fillStyle =
+          need.name == "Food"
+            ? "green"
+            : need.name == "Water"
+            ? "blue"
+            : "yellow";
+        ctx.fillRect(barX, barY, barWidth * hungerPercent, barHeight);
+
+        // Percent label
+        const label = Math.round(need.value).toString();
+        ctx.font = `10px -apple-system, system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "white";
+        ctx.fillText(label, pos.x, barY + barHeight / 2);
+        ctx.restore();
+      }
+    }
+
     // Heading arrow with speed label
     const mot = o.components.Motion;
     if (mot) {
@@ -110,63 +145,6 @@ export function renderObjects(
       ctx.fillStyle = "white";
       ctx.fillText(label, ex + 6, ey);
 
-      ctx.restore();
-    }
-
-    // Hunger bar under creature
-    const hun = o.components.Hunger;
-    if (hun) {
-      ctx.save();
-      const barWidth = ren.radius * 2;
-      const barHeight = 8;
-      const barX = pos.x - barWidth / 2;
-      const barY = pos.y + ren.radius + 4;
-
-      // Background
-      ctx.fillStyle = "black";
-      ctx.fillRect(barX, barY, barWidth, barHeight);
-
-      // Foreground
-      const hungerPercent = hun.value / 100;
-      ctx.fillStyle = "green";
-      ctx.fillRect(barX, barY, barWidth * hungerPercent, barHeight);
-
-      // Percent label
-      const label = Math.round(hun.value).toString();
-      ctx.font = `10px -apple-system, system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "white";
-      ctx.fillText(label, pos.x, barY + barHeight / 2);
-      ctx.restore();
-    }
-
-    // Thirst bar under Hunger
-    const thi = o.components.Thirst;
-    if (thi) {
-      ctx.save();
-      const barWidth = ren.radius * 2;
-      const barHeight = 8;
-      const barX = pos.x - barWidth / 2;
-      const baseY = pos.y + ren.radius + 4;
-      const barY = baseY + (hun ? barHeight + 2 : 0);
-
-      // Background
-      ctx.fillStyle = "black";
-      ctx.fillRect(barX, barY, barWidth, barHeight);
-
-      // Foreground
-      const thirstPercent = thi.value / 100;
-      ctx.fillStyle = "blue";
-      ctx.fillRect(barX, barY, barWidth * thirstPercent, barHeight);
-
-      // Percent label
-      const label = Math.round(thi.value).toString();
-      ctx.font = `10px -apple-system, system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "white";
-      ctx.fillText(label, pos.x, barY + barHeight / 2);
       ctx.restore();
     }
 

@@ -80,24 +80,32 @@ export const Turtle: EntityFactory = {
       turnRate: 4.0, // rad/s
       // seek tuning
       arriveDistance: 8,
-      slowRadius: 60,
+      slowRadius: 20,
       // wander tuning
       wanderTurnInterval: 0.5,
       wanderJitter: 0.25, // small nudge in radians
       reverseChance: 0.02, // ~2% per second
     });
-    addComponent(o, "Hunger", {
-      value: 80 + Math.random() * 20,
-      min: 0,
-      max: 100,
-      lossPerSecond: 6,
-    });
-    addComponent(o, "Thirst", {
-      value: 80 + Math.random() * 20,
-      min: 0,
-      max: 100,
-      lossPerSecond: 5,
-    });
+    addComponent(o, "Needs", [
+      {
+        name: "Water",
+        value: 80 + Math.random() * 20,
+        min: 0,
+        max: 100,
+        lossPerSecond: 6,
+        seekAtFraction: 0.3,
+        satiatedAtFraction: 0.8,
+      },
+      {
+        name: "Food",
+        value: 80 + Math.random() * 20,
+        min: 0,
+        max: 100,
+        lossPerSecond: 5,
+        seekAtFraction: 0.3,
+        satiatedAtFraction: 0.8,
+      },
+    ]);
     return o;
   },
 };

@@ -1,12 +1,10 @@
 import type { AssetDetails } from "./components/render2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
-import { drinkingSystem } from "./systems/drinking";
-import { feedingSystem } from "./systems/feeding";
-import { hungerSystem } from "./systems/hunger";
+import { providePassiveResourcesSystem } from "./systems/providePassiveResources";
 import { motionSystem } from "./systems/motion";
 import { steeringSystem } from "./systems/steering";
-import { thirstSystem } from "./systems/thirst";
+import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 
 const canvas = document.querySelector("canvas")!;
@@ -16,10 +14,8 @@ const world: World = {
   objects: [],
   nextId: 1,
   systems: [
-    hungerSystem,
-    feedingSystem,
-    thirstSystem,
-    drinkingSystem,
+    needsSystem,
+    providePassiveResourcesSystem,
     steeringSystem,
     motionSystem,
   ],
@@ -28,7 +24,7 @@ const world: World = {
 world.objects.push(FoodResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 100;
+const creatureCount = 3;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }
