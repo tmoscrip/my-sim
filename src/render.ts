@@ -79,6 +79,7 @@ export function renderObjects(
 
     const hun = o.components.Hunger;
     if (hun) {
+      ctx.save();
       const barWidth = ren.radius * 2;
       const barHeight = 8;
       const barX = pos.x - barWidth / 2;
@@ -100,11 +101,13 @@ export function renderObjects(
       ctx.textBaseline = "middle";
       ctx.fillStyle = "white";
       ctx.fillText(label, pos.x, barY + barHeight / 2);
+      ctx.restore();
     }
 
     // Thirst bar under Hunger
     const thi = o.components.Thirst;
     if (thi) {
+      ctx.save();
       const barWidth = ren.radius * 2;
       const barHeight = 8;
       const barX = pos.x - barWidth / 2;
@@ -127,6 +130,26 @@ export function renderObjects(
       ctx.textBaseline = "middle";
       ctx.fillStyle = "white";
       ctx.fillText(label, pos.x, barY + barHeight / 2);
+      ctx.restore();
+    }
+
+    const beh = o.components.Behaviour;
+    if (beh && beh.mode) {
+      ctx.save();
+      const label = beh.mode;
+      // place under id label
+      ctx.font = `${Math.max(
+        8,
+        Math.floor(ren.radius * 0.2)
+      )}px -apple-system, system-ui, sans-serif`;
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 3;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.strokeText(label, pos.x, pos.y + ren.radius / 2);
+      ctx.fillStyle = "white";
+      ctx.fillText(label, pos.x, pos.y + ren.radius / 2);
+      ctx.restore();
     }
   }
 }
