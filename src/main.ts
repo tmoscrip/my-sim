@@ -1,6 +1,7 @@
 import { Creature, Resource } from "./entity-types";
 import { renderObjects } from "./render";
 import { motionSystem } from "./systems/motion";
+import { steeringSystem } from "./systems/steering";
 import { type WorldObject } from "./world-object";
 
 const canvas = document.querySelector("canvas")!;
@@ -22,6 +23,7 @@ function loop() {
   const dt = Math.min(0.05, (now - last) / 1000); // clamp
   last = now;
 
+  steeringSystem(objects, dt);
   motionSystem(objects, dt, 1000, 1000);
   renderObjects(ctx, objects);
 

@@ -20,6 +20,18 @@ export const Creature: EntityFactory = {
       heading: Math.random() * Math.PI * 2,
       speed: 50 + Math.random() * 150,
     });
+    addComponent(o, "Behaviour", {
+      mode: "Wander",
+      desiredSpeed: 80 + Math.random() * 60, // px/s
+      turnRate: 2.0, // rad/s
+      // seek tuning
+      arriveDistance: 8,
+      slowRadius: 120,
+      // wander tuning
+      wanderTurnInterval: 0.5,
+      wanderJitter: 0.25, // small nudge in radians
+      reverseChance: 0.02, // ~2% per second
+    });
     return o;
   },
 };
