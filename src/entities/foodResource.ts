@@ -19,13 +19,6 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   ctx.strokeStyle = "black";
   ctx.lineWidth = 5;
   ctx.stroke();
-
-  const idFontSize = Math.max(10, Math.floor(ren.radius * 0.8));
-  ctx.font = `${idFontSize}px -apple-system, system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "white";
-  ctx.fillText(o.id.toString(), pos.x, pos.y);
 }
 
 export const FoodResource: EntityFactory = {

@@ -44,22 +44,17 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
         -r + (ren.asset.yOffsetPx || 0),
         r * 2,
         r * 2
-      ); // TODO: Allow assets to be offset to account for non-square images
+      );
       ctx.restore();
     }
   }
-
-  const idFontSize = Math.max(8, Math.floor(ren.radius * 0.4));
-  ctx.font = `${idFontSize}px -apple-system, system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "white";
-  ctx.fillText(o.id.toString(), pos.x, pos.y - ren.radius * 0.6);
 }
 
 export const Turtle: EntityFactory = {
   create: (entityId: EntityId) => {
     var o = createObject(entityId);
+    o.debug = true;
+
     addComponent(o, "Position", {
       x: 200 + Math.random() * 600,
       y: 200 + Math.random() * 600,

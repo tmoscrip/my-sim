@@ -52,7 +52,17 @@ export function renderObjects(
 
     o.components.Render2D.render(ctx, o);
 
-    // Debug: draw heading arrow and speed label if Motion exists
+    if (!o.debug) continue;
+
+    // ID label above creature
+    const idFontSize = Math.max(8, Math.floor(ren.radius * 0.4));
+    ctx.font = `${idFontSize}px -apple-system, system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "white";
+    ctx.fillText(o.id.toString(), pos.x, pos.y - ren.radius * 0.6);
+
+    // Heading arrow with speed label
     const mot = o.components.Motion;
     if (mot) {
       ctx.save();
@@ -103,6 +113,7 @@ export function renderObjects(
       ctx.restore();
     }
 
+    // Hunger bar under creature
     const hun = o.components.Hunger;
     if (hun) {
       ctx.save();
@@ -159,6 +170,7 @@ export function renderObjects(
       ctx.restore();
     }
 
+    // Behaviour mode label on creature
     const beh = o.components.Behaviour;
     if (beh && beh.mode) {
       ctx.save();

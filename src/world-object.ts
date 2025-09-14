@@ -5,12 +5,14 @@ export type EntityId = number;
 export type WorldObject = {
   id: EntityId;
   components: Partial<{ [K in ComponentKey]: Components[K] }>;
+  debug: boolean;
 };
 
 export function createObject(entityId: number): WorldObject {
   return {
     id: entityId,
     components: {},
+    debug: false,
   };
 }
 
