@@ -15,17 +15,149 @@
         justify-content: center;
       }
 
-      canvas {
-        display: block;
-        background: #1b1b1b;
+      #app {
+        position: relative;
         width: 1000px;
         height: 1000px;
+      }
+
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1000px;
+        height: 1000px;
+      }
+
+      #canvas2d {
+        z-index: 1;
         border: 2px solid #333;
+        background: #1b1b1b;
+      }
+
+      #canvasGl {
+        z-index: 2;
+        pointer-events: none;
       }
     </style>
   </head>
   <body>
-    <div id="app"><canvas id="canvas" height="1000" width="1000"></canvas></div>
+    <div id="app">
+      <canvas id="canvas2d" height="1000" width="1000"></canvas>
+      <canvas id="canvasGl" height="1000" width="1000"></canvas>
+    </div>
+    <script type="module">
+      const canvas = document.getElementById("canvasGl");
+      const gl = canvas.getContext("webgl2", {
+        alpha: true,
+        antialias: true,
+      });
+      gl.viewport(0, 0, canvas.width, canvas.height);
+
+      // --- Shaders ---
+      const vsSrc = `#version 300 es
+in vec2 a_pos;
+uniform vec2 u_resolution;
+void main() {
+  vec2 clip = (a_pos / u_resolution) * 2.0 - 1.0;
+  clip.y *= -1.0; // flip Y to match canvas
+  gl_Position = vec4(clip, 0.0, 1.0);
+  gl_PointSize = 3.0;
+}`;
+      const fsSrc = `#version 300 es
+precision highp float;
+out vec4 outColor;
+void main() {
+  float dist = length(gl_PointCoord - 0.5);
+  float alpha = smoothstep(0.5, 0.0, dist);
+  outColor = vec4(1.0, 1.0, 1.0, alpha);
+}`;
+
+      // --- Compile + link ---
+      function compile(type, src) {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS))
+          throw gl.getShaderInfoLog(sh);
+        return sh;
+      }
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS))
+        throw gl.getProgramInfoLog(prog);
+      gl.useProgram(prog);
+
+      // --- Buffers ---
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      const loc = gl.getAttribLocation(prog, "a_pos");
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      // --- Uniforms ---
+      gl.uniform2f(
+        gl.getUniformLocation(prog, "u_resolution"),
+        canvas.width,
+        canvas.height
+      );
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+
+      // --- Particle system ---
+      const particles = [];
+      const emitter = { x: canvas.width / 2, y: canvas.height / 2 };
+      const maxParticles = 10000;
+      const spawnRate = 100; // per frame
+
+      function spawn() {
+        for (let i = 0; i < spawnRate; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const s = 0.5 + Math.random() * 1.5;
+          particles.push({
+            x: emitter.x,
+            y: emitter.y,
+            vx: Math.cos(a) * s,
+            vy: Math.sin(a) * s,
+            age: 0,
+          });
+        }
+      }
+
+      function update() {
+        for (let p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.01; // gravity-ish
+          p.age++;
+        }
+        // remove old
+        for (let i = particles.length - 1; i >= 0; i--)
+          if (particles[i].age > 200) particles.splice(i, 1);
+      }
+
+      function draw() {
+        gl.clearColor(0, 0, 0, 0.1); // slight trail
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        const data = new Float32Array(particles.length * 2);
+        particles.forEach((p, i) => {
+          data[i * 2] = p.x;
+          data[i * 2 + 1] = p.y;
+        });
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+        gl.drawArrays(gl.POINTS, 0, particles.length);
+      }
+
+      function frame() {
+        spawn();
+        update();
+        draw();
+        requestAnimationFrame(frame);
+      }
+      frame();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
