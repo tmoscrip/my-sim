@@ -2,8 +2,7 @@ import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
 import { consumeResourcesSystem } from "./systems/consume-resources";
-import { motionSystem } from "./systems/motion";
-import { steeringSystem } from "./systems/steering";
+import { updateKinematicsSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
@@ -20,8 +19,7 @@ export const world: World = {
     seeksNeedsSystem,
     needsSystem,
     consumeResourcesSystem,
-    steeringSystem,
-    motionSystem,
+    updateKinematicsSystem,
   ],
 };
 

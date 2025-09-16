@@ -13,7 +13,7 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   const ren = o.components.Render2D;
   if (!pos || !ren) return;
 
-  const heading = o.components.Motion?.heading ?? 0;
+  const orientation = o.components.Kinematics?.orientation ?? 0;
 
   if (ren.character) {
     ctx.save();
@@ -24,7 +24,7 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "white";
-    ctx.rotate(heading);
+    ctx.rotate(orientation);
     ctx.fillText(ren.character, 0, 0);
     ctx.restore();
   }
@@ -36,7 +36,7 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
       ctx.save();
       ctx.translate(pos.x, pos.y);
       // Avoid negative scale; rotate 180° if you need the same flip
-      ctx.rotate(heading + Math.PI);
+      ctx.rotate(orientation + Math.PI);
       // Center image at origin
       ctx.drawImage(
         img,
@@ -69,14 +69,15 @@ export const Turtle: EntityFactory = {
       },
       render: render,
     });
+    addComponent(o, "Kinematics", {
+      velocity: { x: 0, y: 0 },
+      orientation: 0,
+      rotation: 0,
+    });
     addComponent(o, "Clickable", {
       onClick: () => {
         o.debug = !o.debug;
       },
-    });
-    addComponent(o, "Motion", {
-      heading: Math.random() * Math.PI * 2,
-      speed: 50 + Math.random() * 150,
     });
     addComponent(o, "Behaviour", {
       mode: "Wander",

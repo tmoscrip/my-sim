@@ -1,3 +1,4 @@
+import { vec } from "./math";
 import { query, type WorldObject } from "./world-object";
 
 const CACHE = new Map<string, HTMLImageElement>();
@@ -98,11 +99,11 @@ export function renderObjects(
     }
 
     // Heading arrow with speed label
-    const mot = o.components.Motion;
-    if (mot) {
+    const kin = o.components.Kinematics;
+    if (kin) {
       ctx.save();
-      const angle = mot.heading;
-      const speed = mot.speed ?? 0;
+      const angle = kin.orientation;
+      const speed = vec.length(kin.velocity) ?? 0;
 
       // Arrow length scales with speed but remains readable
       const arrowLen = ren.radius + Math.min(speed, 300) * 0.5;
