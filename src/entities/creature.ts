@@ -52,14 +52,21 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
 
 export const Turtle: EntityFactory = {
   create: (entityId: EntityId) => {
+    // Determine turtle personality type (randomly)
+    const personality = Math.floor(Math.random() * 1); // 0, 1, or 2
+
     var o = createObject(entityId);
 
     addComponent(o, "Position", {
       x: 200 + Math.random() * 600,
       y: 200 + Math.random() * 600,
     });
+
+    // Size based on personality: fast=smaller, slow=larger
+    const baseRadius = personality === 0 ? 15 : personality === 1 ? 25 : 20;
+
     addComponent(o, "Render2D", {
-      radius: 20 + Math.random() * 20,
+      radius: baseRadius + Math.random() * 10,
       colour: getRandomGrey(),
       asset: {
         path: "turtle.svg",
@@ -74,42 +81,93 @@ export const Turtle: EntityFactory = {
       orientation: 0,
       rotation: 0,
     });
+    // Add steering component for accumulating forces
+    addComponent(o, "Steering", {
+      linear: { x: 0, y: 0 },
+      angular: 0,
+    });
     addComponent(o, "Clickable", {
       onClick: () => {
         o.debug = !o.debug;
       },
     });
-    addComponent(o, "Behaviour", {
-      mode: "Wander",
-      timeInMode: 0, // TODO: Default initial value
-      desiredSpeed: 40 + Math.random() * 100, // px/s
-      turnRate: 8.0, // rad/s
-      // seek tuning
-      arriveDistance: 8,
-      slowRadius: 20,
-      // wander tuning
-      wanderTurnInterval: 0.5,
-      wanderJitter: 0.25, // small nudge in radians
-      reverseChance: 0.02, // ~2% per second
+
+    // Movement limits shared by all steering behaviors
+    addComponent(o, "MovementLimits", {
+      maxSpeed: 110,
+      maxAcceleration: 900,
+      maxRotation: 5.0,
+      maxAngularAcceleration: 10.0,
     });
+
+    // Wander behavior params
+    addComponent(o, "WanderSteering", {
+      radius: 108,
+      distance: 0,
+      jitter: 4.4,
+      timeToTarget: 0.25,
+      decayPerSec: 2.0,
+      maxArc: 1.2,
+      cruiseSpeed: 110,
+      weight: 1,
+      priority: 10,
+      debugColor: "#FF4DFF",
+    });
+
+    // Arrive/Seek behavior params
+    addComponent(o, "ArriveSteering", {
+      targetRadius: 6,
+      slowRadius: 40,
+      timeToTarget: 0.25,
+      weight: 1,
+      priority: 20,
+      debugColor: "#66FF66",
+    });
+
+    // Align steering params for angular control (used by evaluators)
+    addComponent(o, "AlignSteering", {
+      maxRotation: 5.0,
+      maxAngularAcceleration: 10.0,
+      angularTargetRadius: 0.05,
+      angularSlowRadius: 0.6,
+      angularTimeToTarget: 0.1,
+    });
+
+    // Boundary avoidance (predictive) params
+    addComponent(o, "BoundaryAvoidance", {
+      buffer: 30,
+      strength: 4900,
+      angularScale: 23.6,
+      priority: 200,
+      lookAhead: 80,
+      debugColor: "#AA66FF",
+    });
+
+    // Behaviour now carries only mode/state
+    addComponent(o, "Behaviour", { mode: "Wander" });
+
+    // Configure needs based on personality type (unchanged)
+    const waterLossRate = personality === 0 ? 9 : personality === 1 ? 5 : 7;
+    const foodLossRate = personality === 0 ? 4 : personality === 1 ? 2 : 3;
+
     addComponent(o, "Needs", [
       {
         name: "Water",
         value: 80 + Math.random() * 20,
         min: 0,
         max: 100,
-        lossPerSecond: 7,
+        lossPerSecond: waterLossRate,
         seekAtFraction: 0.2,
-        satiatedAtFraction: 0.8,
+        satiatedAtFraction: 0.9,
       },
       {
         name: "Food",
-        value: 80 + Math.random() * 20,
+        value: 40 + Math.random() * 20,
         min: 0,
         max: 100,
-        lossPerSecond: 3,
+        lossPerSecond: foodLossRate,
         seekAtFraction: 0.3,
-        satiatedAtFraction: 0.6,
+        satiatedAtFraction: 0.9,
       },
     ]);
     return o;

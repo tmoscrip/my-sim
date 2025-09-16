@@ -1,21 +1,14 @@
-import type { Vec2 } from "../types";
+import type { Resources } from "./passive-resource-provider";
 
-export type BehaviourMode = "Idle" | "Wander" | "Seek";
-export type BehaviourComponent = {
-  mode: BehaviourMode;
-  timeInMode: number;
-
-  // generic steering knobs
-  desiredSpeed: number; // cruise px/s
-  turnRate: number; // rad/s max turn rate
-
-  // seek
-  target?: Vec2;
-  arriveDistance?: number; // px to consider arrived and stop
-  slowRadius?: number; // px within which to slow down
-
-  // wander
-  wanderTurnInterval?: number; // seconds between small heading jitters
-  wanderJitter?: number; // radians per jitter
-  reverseChance?: number; // chance per second to flip 180°
-};
+export type BehaviourComponent =
+  | { mode: "Idle" }
+  | {
+      mode: "Wander";
+      // internal wander state
+      wanderAngle?: number; // radians
+    }
+  | {
+      mode: "Seek";
+      targetId: number;
+      seekingNeed?: Resources; // which need we're currently pursuing
+    };

@@ -2,12 +2,13 @@ import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
 import { consumeResourcesSystem } from "./systems/consume-resources";
-import { updateKinematicsSystem } from "./systems/steering";
+import { behaviourSystem, containmentSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
 import { query } from "./world-object";
 import { PointerHighlight } from "./entities/pointer";
+import { updateKinematicsSystem } from "./systems/kinematics";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -19,7 +20,9 @@ export const world: World = {
     seeksNeedsSystem,
     needsSystem,
     consumeResourcesSystem,
-    updateKinematicsSystem,
+    behaviourSystem, // Process behaviors to produce steering forces
+    containmentSystem, // Apply boundary forces to steering
+    updateKinematicsSystem, // Integrate kinematics with accumulated steering
   ],
 };
 
@@ -30,7 +33,7 @@ world.objects.push(WaterResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 20;
+const creatureCount = 4;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }
@@ -86,10 +89,9 @@ canvas.addEventListener("mousemove", (e) => {
   position.x = x;
   position.y = y;
   pointer.isDown = e.buttons !== 0;
-  console.log(`Pointer at ${x}, ${y} (isDown: ${pointer.isDown})`);
 });
 
-canvas.addEventListener("mousedown", (e) => {
+canvas.addEventListener("mousedown", () => {
   var pointers = query(world.objects, "PointerInput", "Position");
   if (pointers.length === 0) return;
   if (pointers.length > 1) {
@@ -101,7 +103,7 @@ canvas.addEventListener("mousedown", (e) => {
   pointer.onClick(pos.x, pos.y);
 });
 
-canvas.addEventListener("mouseup", (e) => {
+canvas.addEventListener("mouseup", () => {
   var pointers = query(world.objects, "PointerInput", "Position");
   if (pointers.length === 0) return;
   if (pointers.length > 1) {

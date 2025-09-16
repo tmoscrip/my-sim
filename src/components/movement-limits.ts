@@ -1,0 +1,8 @@
+export type MovementLimitsComponent = {
+  // Linear caps
+  maxSpeed: number; // px/s
+  maxAcceleration: number; // px/s^2
+  // Angular caps
+  maxRotation: number; // rad/s
+  maxAngularAcceleration: number; // rad/s^2
+};
