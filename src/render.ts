@@ -16,7 +16,9 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.onload = async () => {
       try {
         // Ensure decode completes for SVGs
-        if ("decode" in img) await (img as any).decode();
+        if ("decode" in img && typeof img.decode === "function") {
+          await img.decode();
+        }
       } catch {
         // Ignore decode errors; onload already fired
       }

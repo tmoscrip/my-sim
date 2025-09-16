@@ -124,7 +124,7 @@ function inwardNormal(pos: { x: number; y: number }, buffer: number) {
   return vec.make(0, -1);
 }
 
-function evalWander(o: WorldObject): SteeringOutput | null {
+function evalWander(o: WorldObject, dt: number): SteeringOutput | null {
   const beh = o.components.Behaviour as BehaviourComponent | undefined;
   if (!beh || beh.mode !== "Wander") return null;
   const pos = o.components.Position!;
@@ -151,41 +151,31 @@ function evalWander(o: WorldObject): SteeringOutput | null {
     (o.components.BoundaryAvoidance as BoundaryAvoidanceComponent)?.buffer ??
     60;
 
-  if ((beh as any).wanderAngle === undefined) (beh as any).wanderAngle = 0;
+  if (beh.wanderAngle === undefined) beh.wanderAngle = 0;
 
   // Integrate wander angle with capped rate (binomial noise)
   const binomial = Math.random() - Math.random();
-  const maxDelta =
-    wanderJitter * ((o as any)._dt !== undefined ? (o as any)._dt : 0);
-  (beh as any).wanderAngle += clamp(binomial * maxDelta, -maxDelta, maxDelta);
+  const maxDelta = wanderJitter * dt;
+  beh.wanderAngle += clamp(binomial * maxDelta, -maxDelta, maxDelta);
 
   // Mean-reversion
-  (beh as any).wanderAngle -=
-    (beh as any).wanderAngle * wanderDecayPerSec * ((o as any)._dt ?? 0);
+  beh.wanderAngle -= beh.wanderAngle * wanderDecayPerSec * dt;
 
   // Clamp to forward cone early
-  (beh as any).wanderAngle = clamp(
-    (beh as any).wanderAngle,
-    -wanderMaxArc,
-    wanderMaxArc
-  );
+  beh.wanderAngle = clamp(beh.wanderAngle, -wanderMaxArc, wanderMaxArc);
 
   // Angle bias: bend wander angle toward inward normal when near walls
   const proxSelf = boundaryProximity(pos, buffer);
   if (proxSelf > 0) {
     const inward = inwardNormal(pos, buffer);
     const inwardAngle = Math.atan2(inward.y, inward.x);
-    const currentAngle = kin.orientation + (beh as any).wanderAngle;
+    const currentAngle = kin.orientation + beh.wanderAngle;
     const delta = angleDiff(inwardAngle, currentAngle);
     const maxBend = Math.PI / 3; // up to 60 deg per frame at max proximity
     const bendStrength = Math.min(1, proxSelf * 1.25) * 0.6; // scale
-    (beh as any).wanderAngle += clamp(delta, -maxBend, maxBend) * bendStrength;
+    beh.wanderAngle += clamp(delta, -maxBend, maxBend) * bendStrength;
     // Re-clamp to forward cone
-    (beh as any).wanderAngle = clamp(
-      (beh as any).wanderAngle,
-      -wanderMaxArc,
-      wanderMaxArc
-    );
+    beh.wanderAngle = clamp(beh.wanderAngle, -wanderMaxArc, wanderMaxArc);
   }
 
   // Circle center and target (after bias)
@@ -198,7 +188,7 @@ function evalWander(o: WorldObject): SteeringOutput | null {
     vec.scale(forward, wanderDistance, vec.make(0, 0)),
     vec.make(0, 0)
   );
-  const angle = kin.orientation + (beh as any).wanderAngle;
+  const angle = kin.orientation + beh.wanderAngle;
   let target = {
     x: circleCenter.x + Math.cos(angle) * wanderRadius,
     y: circleCenter.y + Math.sin(angle) * wanderRadius,
@@ -291,7 +281,10 @@ function evalWander(o: WorldObject): SteeringOutput | null {
   return { linear, angular, debugColor, weight, priority, name: "Wander" };
 }
 
-function evalArrive(o: WorldObject): SteeringOutput | null {
+function evalArrive(
+  o: WorldObject,
+  worldObjects: WorldObject[]
+): SteeringOutput | null {
   const beh = o.components.Behaviour as BehaviourComponent | undefined;
   if (!beh || beh.mode !== "Seek") return null;
   const pos = o.components.Position!;
@@ -302,10 +295,8 @@ function evalArrive(o: WorldObject): SteeringOutput | null {
   if (!a) return null;
 
   // resolve target
-  const targetObj = (beh as any).targetId
-    ? (o as any)._worldObjects?.find(
-        (e: WorldObject) => e.id === (beh as any).targetId
-      )
+  const targetObj = beh.targetId
+    ? worldObjects.find((e: WorldObject) => e.id === beh.targetId)
     : undefined;
   const tpos = targetObj?.components.Position;
   if (!tpos) return null;
@@ -497,12 +488,6 @@ function clampSteering(
 
 // Main behaviour system now evaluates all steering sources and aggregates them
 export function behaviourSystem(objs: WorldObject[], dt: number) {
-  // Attach world objects reference and dt for evaluators that need it
-  for (const o of objs) {
-    (o as any)._worldObjects = objs;
-    (o as any)._dt = dt;
-  }
-
   const actors = query(objs, "Behaviour", "Position", "Kinematics");
 
   for (const o of actors) {
@@ -514,9 +499,9 @@ export function behaviourSystem(objs: WorldObject[], dt: number) {
 
     // Evaluate contributions
     const contribs: SteeringOutput[] = [];
-    const w = evalWander(o);
+    const w = evalWander(o, dt);
     if (w) contribs.push(w);
-    const s = evalArrive(o);
+    const s = evalArrive(o, objs);
     if (s) contribs.push(s);
     const b = evalBoundaryAvoid(o);
     if (b) contribs.push(b);
@@ -528,47 +513,5 @@ export function behaviourSystem(objs: WorldObject[], dt: number) {
     steering.contributions!.push(...contribs);
     vec.add(steering.linear, final.linear, steering.linear);
     steering.angular += final.angular;
-  }
-}
-
-// Legacy containment keeps agents inside hard bounds with a soft push
-export function containmentSystem(objs: WorldObject[], _dt: number) {
-  const movers = query(objs, "Position", "Kinematics");
-  const margin = 30;
-  const turnForce = 0; // set to 0 now that BoundaryAvoidance is in place
-
-  for (const o of movers) {
-    if (turnForce === 0) break;
-    const pos = o.components.Position!;
-    const steering = getOrCreateSteering(o);
-
-    if (pos.x < margin) {
-      vec.add(
-        steering.linear,
-        vec.scale(vec.make(1, 0), turnForce),
-        steering.linear
-      );
-    }
-    if (pos.x > WorldConfig.world.width - margin) {
-      vec.add(
-        steering.linear,
-        vec.scale(vec.make(-1, 0), turnForce),
-        steering.linear
-      );
-    }
-    if (pos.y < margin) {
-      vec.add(
-        steering.linear,
-        vec.scale(vec.make(0, 1), turnForce),
-        steering.linear
-      );
-    }
-    if (pos.y > WorldConfig.world.height - margin) {
-      vec.add(
-        steering.linear,
-        vec.scale(vec.make(0, -1), turnForce),
-        steering.linear
-      );
-    }
   }
 }

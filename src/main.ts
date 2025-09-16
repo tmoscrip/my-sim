@@ -2,7 +2,7 @@ import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
 import { consumeResourcesSystem } from "./systems/consume-resources";
-import { behaviourSystem, containmentSystem } from "./systems/steering";
+import { behaviourSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
@@ -22,7 +22,6 @@ export const world: World = {
     seeksNeedsSystem,
     consumeResourcesSystem,
     behaviourSystem, // Process behaviors to produce steering forces
-    containmentSystem, // Apply boundary forces to steering
     updateKinematicsSystem, // Integrate kinematics with accumulated steering
   ],
 };

@@ -38,7 +38,7 @@ function hasAll<K extends readonly ComponentKey[]>(
   components: Required<Pick<typeof o.components, K[number]>> &
     typeof o.components;
 } {
-  return keys.every((k) => k in o.components) as any;
+  return keys.every((k) => k in o.components);
 }
 
 export function query<K extends ComponentKey>(
