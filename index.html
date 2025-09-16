@@ -18,15 +18,18 @@
       canvas {
         display: block;
         background: #1b1b1b;
-        width: 1000px;
-        height: 1000px;
+        /* Responsive square: size to the smaller viewport dimension */
+        width: min(92vmin, 100vw, 100vh);
+        aspect-ratio: 1 / 1;
+        height: auto;
+        max-width: 100%;
         border: 2px solid #333;
         cursor: none;
       }
     </style>
   </head>
   <body>
-    <div id="app"><canvas id="canvas" height="1000" width="1000"></canvas></div>
+    <div id="app"><canvas id="canvas"></canvas></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

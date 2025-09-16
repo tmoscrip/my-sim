@@ -5,14 +5,18 @@ import {
   type WorldObject,
 } from "../world-object";
 import type { EntityFactory } from "./types";
+import { WorldConfig } from "../config";
 
 function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   const pos = o.components.Position;
   const ren = o.components.Render2D;
   if (!pos || !ren) return;
 
+  const sp = WorldConfig.worldToScreen(pos.x, pos.y);
+  const rPx = WorldConfig.scalarToPixels(ren.radius);
+
   ctx.beginPath();
-  ctx.arc(pos.x, pos.y, ren.radius, 0, Math.PI * 2);
+  ctx.arc(sp.x, sp.y, rPx, 0, Math.PI * 2);
   ctx.fillStyle = ren.colour;
   ctx.fill();
 
@@ -25,8 +29,9 @@ export const FoodResource: EntityFactory = {
   create: (entityId: EntityId, radius: number = 50) => {
     var o = createObject(entityId);
 
-    const x = 100 + Math.random() * 800;
-    const y = 100 + Math.random() * 800;
+    const margin = Math.max(20, radius + 10);
+    const x = margin + Math.random() * (WorldConfig.world.width - 2 * margin);
+    const y = margin + Math.random() * (WorldConfig.world.height - 2 * margin);
     addComponent(o, "Position", { x: x, y: y });
     addComponent(o, "Render2D", {
       radius: radius,
@@ -46,8 +51,9 @@ export const WaterResource: EntityFactory = {
   create: (entityId: EntityId, radius: number = 50) => {
     var o = createObject(entityId);
 
-    const x = 100 + Math.random() * 800;
-    const y = 100 + Math.random() * 800;
+    const margin = Math.max(20, radius + 10);
+    const x = margin + Math.random() * (WorldConfig.world.width - 2 * margin);
+    const y = margin + Math.random() * (WorldConfig.world.height - 2 * margin);
     addComponent(o, "Position", { x: x, y: y });
     addComponent(o, "Render2D", {
       radius: radius,

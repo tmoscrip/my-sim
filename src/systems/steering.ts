@@ -2,15 +2,16 @@ import type { WorldObject } from "../world-object";
 import { query } from "../world-object";
 import { vec } from "../math";
 import type { SteeringComponent } from "../components/steering";
-import type { BehaviourComponent } from "../components/behaviour";
-import type { LocomotionComponent } from "../components/locomotion";
-import type { MovementLimitsComponent } from "../components/movement-limits";
-import type { WanderSteeringComponent } from "../components/wander-steering";
-import type { ArriveSteeringComponent } from "../components/arrive-steering";
-import type { BoundaryAvoidanceComponent } from "../components/boundary-avoidance";
-import type { AlignSteeringComponent } from "../components/align-steering";
+import type {
+  BehaviourComponent,
+  LocomotionComponent,
+  WanderSteeringComponent,
+  ArriveSteeringComponent,
+  BoundaryAvoidanceComponent,
+} from "../components";
 import type { SteeringOutput } from "../components/steering-base";
 import { getLimits } from "./kinematics";
+import { WorldConfig } from "../config";
 
 // Helpers
 function clamp(v: number, lo: number, hi: number) {
@@ -89,29 +90,33 @@ function alignAngularAccel(
 }
 
 // WORLD
-const WORLD_SIZE = 1000; // match canvas size
+// Use world dimensions from WorldConfig instead of fixed size
 function clamp01(v: number) {
   return v < 0 ? 0 : v > 1 ? 1 : 1 * v; // keep types simple
 }
 
 // Evaluators
 function boundaryProximity(pos: { x: number; y: number }, buffer: number) {
-  const safeMin = buffer;
-  const safeMax = WORLD_SIZE - buffer;
-  const px = Math.min((pos.x - safeMin) / buffer, (safeMax - pos.x) / buffer);
-  const py = Math.min((pos.y - safeMin) / buffer, (safeMax - pos.y) / buffer);
+  const safeMinX = buffer;
+  const safeMinY = buffer;
+  const safeMaxX = WorldConfig.world.width - buffer;
+  const safeMaxY = WorldConfig.world.height - buffer;
+  const px = Math.min((pos.x - safeMinX) / buffer, (safeMaxX - pos.x) / buffer);
+  const py = Math.min((pos.y - safeMinY) / buffer, (safeMaxY - pos.y) / buffer);
   const p = 1 - clamp01(Math.min(px, py));
   return clamp01(p);
 }
 
 function inwardNormal(pos: { x: number; y: number }, buffer: number) {
   // returns approx inward normal based on closest wall
-  const safeMin = buffer;
-  const safeMax = WORLD_SIZE - buffer;
-  const dxMin = pos.x - safeMin;
-  const dxMax = safeMax - pos.x;
-  const dyMin = pos.y - safeMin;
-  const dyMax = safeMax - pos.y;
+  const safeMinX = buffer;
+  const safeMinY = buffer;
+  const safeMaxX = WorldConfig.world.width - buffer;
+  const safeMaxY = WorldConfig.world.height - buffer;
+  const dxMin = pos.x - safeMinX;
+  const dxMax = safeMaxX - pos.x;
+  const dyMin = pos.y - safeMinY;
+  const dyMax = safeMaxY - pos.y;
   const minPen = Math.min(dxMin, dxMax, dyMin, dyMax);
   if (minPen === dxMin) return vec.make(1, 0);
   if (minPen === dxMax) return vec.make(-1, 0);
@@ -127,18 +132,16 @@ function evalWander(o: WorldObject): SteeringOutput | null {
   const limits = getLimits(o);
   const w =
     (o.components.WanderSteering as WanderSteeringComponent) || undefined;
-  const loco = (o.components.Locomotion as LocomotionComponent) || undefined;
-  if (!w && !loco) return null;
+  if (!w) return null;
 
   // Gather params with fallback to Locomotion
-  const wanderRadius = w?.radius ?? loco!.wanderRadius;
-  const wanderDistance = w?.distance ?? loco!.wanderDistance;
-  const wanderJitter = w?.jitter ?? loco!.wanderJitter;
-  const wanderTimeToTarget = w?.timeToTarget ?? loco!.wanderTimeToTarget;
-  const wanderDecayPerSec = w?.decayPerSec ?? loco?.wanderDecayPerSec ?? 2.0;
-  const wanderMaxArc = w?.maxArc ?? loco?.wanderMaxArc ?? 1.2;
-  const cruise =
-    w?.cruiseSpeed ?? loco?.wanderCruiseSpeed ?? limits.maxSpeed * 0.6;
+  const wanderRadius = w?.radius;
+  const wanderDistance = w?.distance;
+  const wanderJitter = w?.jitter;
+  const wanderTimeToTarget = w?.timeToTarget;
+  const wanderDecayPerSec = w?.decayPerSec ?? 2.0;
+  const wanderMaxArc = w?.maxArc ?? 1.2;
+  const cruise = w?.cruiseSpeed ?? limits.maxSpeed * 0.6;
   const debugColor = w?.debugColor ?? "#FF4DFF";
   const baseWeight = w?.weight ?? 1;
   const priority = w?.priority ?? 10;
@@ -146,7 +149,6 @@ function evalWander(o: WorldObject): SteeringOutput | null {
   // Boundary buffer for deflection/biasing
   const buffer =
     (o.components.BoundaryAvoidance as BoundaryAvoidanceComponent)?.buffer ??
-    (o.components.Locomotion as LocomotionComponent)?.boundaryBuffer ??
     60;
 
   if ((beh as any).wanderAngle === undefined) (beh as any).wanderAngle = 0;
@@ -211,8 +213,16 @@ function evalWander(o: WorldObject): SteeringOutput | null {
     const maxDeflect = wanderRadius * 1.0; // allow full slide on the circle
     const deflect = Math.min(1, proxDeflect) * maxDeflect;
     target = {
-      x: clamp(target.x + inward.x * deflect, buffer, WORLD_SIZE - buffer),
-      y: clamp(target.y + inward.y * deflect, buffer, WORLD_SIZE - buffer),
+      x: clamp(
+        target.x + inward.x * deflect,
+        buffer,
+        WorldConfig.world.width - buffer
+      ),
+      y: clamp(
+        target.y + inward.y * deflect,
+        buffer,
+        WorldConfig.world.height - buffer
+      ),
     };
   }
 
@@ -289,8 +299,7 @@ function evalArrive(o: WorldObject): SteeringOutput | null {
   const limits = getLimits(o);
   const a =
     (o.components.ArriveSteering as ArriveSteeringComponent) || undefined;
-  const loco = (o.components.Locomotion as LocomotionComponent) || undefined;
-  if (!a && !loco) return null;
+  if (!a) return null;
 
   // resolve target
   const targetObj = (beh as any).targetId
@@ -301,9 +310,9 @@ function evalArrive(o: WorldObject): SteeringOutput | null {
   const tpos = targetObj?.components.Position;
   if (!tpos) return null;
 
-  const targetRadius = a?.targetRadius ?? loco!.targetRadius;
-  const slowRadius = a?.slowRadius ?? loco!.slowRadius;
-  const timeToTarget = a?.timeToTarget ?? loco!.timeToTarget;
+  const targetRadius = a?.targetRadius ?? 0.05;
+  const slowRadius = a?.slowRadius ?? 0.6;
+  const timeToTarget = a?.timeToTarget ?? 0.1;
   const debugColor = a?.debugColor ?? "#FFA500";
   const weight = a?.weight ?? 1;
   const priority = a?.priority ?? 20;
@@ -376,8 +385,10 @@ function evalBoundaryAvoid(o: WorldObject): SteeringOutput | null {
   const debugColor = b?.debugColor ?? "#AA66FF";
   const priority = b?.priority ?? 100; // high
 
-  const safeMin = buffer;
-  const safeMax = WORLD_SIZE - buffer;
+  const safeMinX = buffer;
+  const safeMinY = buffer;
+  const safeMaxX = WorldConfig.world.width - buffer;
+  const safeMaxY = WorldConfig.world.height - buffer;
   const speed = vec.length(kin.velocity);
   const forward =
     speed > 1
@@ -389,8 +400,8 @@ function evalBoundaryAvoid(o: WorldObject): SteeringOutput | null {
     vec.make(0, 0)
   );
 
-  const clampedX = clamp(ahead.x, safeMin, safeMax);
-  const clampedY = clamp(ahead.y, safeMin, safeMax);
+  const clampedX = clamp(ahead.x, safeMinX, safeMaxX);
+  const clampedY = clamp(ahead.y, safeMinY, safeMaxY);
   const offset = vec.make(clampedX - ahead.x, clampedY - ahead.y);
 
   if (Math.abs(offset.x) < 0.001 && Math.abs(offset.y) < 0.001) return null;
@@ -399,8 +410,8 @@ function evalBoundaryAvoid(o: WorldObject): SteeringOutput | null {
     1 -
     clamp01(
       Math.min(
-        Math.min((ahead.x - safeMin) / buffer, (safeMax - ahead.x) / buffer),
-        Math.min((ahead.y - safeMin) / buffer, (safeMax - ahead.y) / buffer)
+        Math.min((ahead.x - safeMinX) / buffer, (safeMaxX - ahead.x) / buffer),
+        Math.min((ahead.y - safeMinY) / buffer, (safeMaxY - ahead.y) / buffer)
       )
     );
   const avoidDir = vec.normalize(offset, vec.make(0, 0));
@@ -523,7 +534,6 @@ export function behaviourSystem(objs: WorldObject[], dt: number) {
 // Legacy containment keeps agents inside hard bounds with a soft push
 export function containmentSystem(objs: WorldObject[], _dt: number) {
   const movers = query(objs, "Position", "Kinematics");
-  const worldSize = 1000;
   const margin = 30;
   const turnForce = 0; // set to 0 now that BoundaryAvoidance is in place
 
@@ -539,7 +549,7 @@ export function containmentSystem(objs: WorldObject[], _dt: number) {
         steering.linear
       );
     }
-    if (pos.x > worldSize - margin) {
+    if (pos.x > WorldConfig.world.width - margin) {
       vec.add(
         steering.linear,
         vec.scale(vec.make(-1, 0), turnForce),
@@ -553,7 +563,7 @@ export function containmentSystem(objs: WorldObject[], _dt: number) {
         steering.linear
       );
     }
-    if (pos.y > worldSize - margin) {
+    if (pos.y > WorldConfig.world.height - margin) {
       vec.add(
         steering.linear,
         vec.scale(vec.make(0, -1), turnForce),

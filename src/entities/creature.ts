@@ -7,6 +7,7 @@ import {
   type WorldObject,
 } from "../world-object";
 import type { EntityFactory } from "./types";
+import { WorldConfig } from "../config";
 
 function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   const pos = o.components.Position;
@@ -14,12 +15,14 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   if (!pos || !ren) return;
 
   const orientation = o.components.Kinematics?.orientation ?? 0;
+  const sp = WorldConfig.worldToScreen(pos.x, pos.y);
+  const rPx = WorldConfig.scalarToPixels(ren.radius);
 
   if (ren.character) {
     ctx.save();
-    ctx.translate(pos.x, pos.y);
+    ctx.translate(sp.x, sp.y);
     ctx.scale(-1, -1); // Flip to correct orientation
-    const characterFontSize = Math.max(10, Math.floor(ren.radius * 1.5));
+    const characterFontSize = Math.max(10, Math.floor(rPx * 1.5));
     ctx.font = `${characterFontSize}px -apple-system, system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -30,20 +33,18 @@ function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
   }
 
   if (ren.asset) {
-    const r = ren.radius;
     const img = getAssetSync(ren.asset.path);
     if (img) {
       ctx.save();
-      ctx.translate(pos.x, pos.y);
-      // Avoid negative scale; rotate 180° if you need the same flip
+      ctx.translate(sp.x, sp.y);
       ctx.rotate(orientation + Math.PI);
-      // Center image at origin
+      // Center image at origin using pixel radius
       ctx.drawImage(
         img,
-        -r + ren.asset.xOffsetPx,
-        -r + ren.asset.yOffsetPx,
-        r * 2,
-        r * 2
+        -rPx + ren.asset.xOffsetPx,
+        -rPx + ren.asset.yOffsetPx,
+        rPx * 2,
+        rPx * 2
       );
       ctx.restore();
     }
@@ -57,9 +58,15 @@ export const Turtle: EntityFactory = {
 
     var o = createObject(entityId);
 
+    // Spawn within world bounds with a margin
+    const spawnMargin = 80;
+    const xMin = spawnMargin;
+    const yMin = spawnMargin;
+    const xMax = WorldConfig.world.width - spawnMargin;
+    const yMax = WorldConfig.world.height - spawnMargin;
     addComponent(o, "Position", {
-      x: 200 + Math.random() * 600,
-      y: 200 + Math.random() * 600,
+      x: xMin + Math.random() * Math.max(0, xMax - xMin),
+      y: yMin + Math.random() * Math.max(0, yMax - yMin),
     });
 
     // Size based on personality: fast=smaller, slow=larger

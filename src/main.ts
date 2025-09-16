@@ -9,6 +9,7 @@ import { seeksNeedsSystem } from "./systems/seek-needs";
 import { query } from "./world-object";
 import { PointerHighlight } from "./entities/pointer";
 import { updateKinematicsSystem } from "./systems/kinematics";
+import { WorldConfig } from "./config";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -17,8 +18,8 @@ export const world: World = {
   objects: [],
   nextId: 1,
   systems: [
-    seeksNeedsSystem,
     needsSystem,
+    seeksNeedsSystem,
     consumeResourcesSystem,
     behaviourSystem, // Process behaviors to produce steering forces
     containmentSystem, // Apply boundary forces to steering
@@ -26,6 +27,14 @@ export const world: World = {
   ],
 };
 
+// Configure canvas/backing store & world-to-screen transform
+WorldConfig.configureCanvas(canvas);
+window.addEventListener("resize", () => WorldConfig.refit());
+// Handle dpr changes (zoom/monitor move)
+matchMedia(
+  `(resolution: ${globalThis.devicePixelRatio || 1}dppx)`
+).addEventListener?.("change", () => WorldConfig.refit());
+
 world.objects.push(FoodResource.create(world.nextId++));
 world.objects.push(FoodResource.create(world.nextId++));
 world.objects.push(FoodResource.create(world.nextId++));
@@ -33,7 +42,7 @@ world.objects.push(WaterResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 world.objects.push(WaterResource.create(world.nextId++));
 
-const creatureCount = 4;
+const creatureCount = 8;
 for (let i = 0; i < creatureCount; i++) {
   world.objects.push(Turtle.create(world.nextId++));
 }
@@ -76,8 +85,14 @@ function logFps(now: number, dt: number, intervalMillis = 1000) {
 
 canvas.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  // Convert CSS pixels to canvas backing pixels (handles DPR)
+  const dpr =
+    rect.width > 0
+      ? canvas.width / rect.width
+      : globalThis.devicePixelRatio || 1;
+  const xPx = (e.clientX - rect.left) * dpr;
+  const yPx = (e.clientY - rect.top) * dpr;
+  const { x, y } = WorldConfig.screenToWorld(xPx, yPx);
 
   var pointers = query(world.objects, "PointerInput", "Position");
   if (pointers.length === 0) return;
@@ -100,6 +115,7 @@ canvas.addEventListener("mousedown", () => {
   const pointer = pointers[0].components.PointerInput;
   const pos = pointers[0].components.Position;
   pointer.isDown = true;
+  // Pass world-space coords to click handler
   pointer.onClick(pos.x, pos.y);
 });
 
