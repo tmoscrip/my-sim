@@ -4,7 +4,6 @@ import { vec } from "../math";
 import type { SteeringComponent } from "../components/steering";
 import type {
   BehaviourComponent,
-  LocomotionComponent,
   WanderSteeringComponent,
   ArriveSteeringComponent,
   BoundaryAvoidanceComponent,
@@ -108,20 +107,65 @@ function boundaryProximity(pos: { x: number; y: number }, buffer: number) {
 }
 
 function inwardNormal(pos: { x: number; y: number }, buffer: number) {
-  // returns approx inward normal based on closest wall
+  // Returns a simple inward normal that prevents corner oscillation
   const safeMinX = buffer;
   const safeMinY = buffer;
   const safeMaxX = WorldConfig.world.width - buffer;
   const safeMaxY = WorldConfig.world.height - buffer;
-  const dxMin = pos.x - safeMinX;
-  const dxMax = safeMaxX - pos.x;
-  const dyMin = pos.y - safeMinY;
-  const dyMax = safeMaxY - pos.y;
-  const minPen = Math.min(dxMin, dxMax, dyMin, dyMax);
-  if (minPen === dxMin) return vec.make(1, 0);
-  if (minPen === dxMax) return vec.make(-1, 0);
-  if (minPen === dyMin) return vec.make(0, 1);
-  return vec.make(0, -1);
+
+  // Calculate distances to each wall
+  const leftDist = pos.x - safeMinX;
+  const rightDist = safeMaxX - pos.x;
+  const topDist = pos.y - safeMinY;
+  const bottomDist = safeMaxY - pos.y;
+
+  // Find the closest wall
+  const minDist = Math.min(leftDist, rightDist, topDist, bottomDist);
+
+  let forceX = 0;
+  let forceY = 0;
+
+  // Only apply force from the single closest wall to prevent competing forces
+  if (minDist === leftDist && leftDist < buffer) {
+    forceX = 1; // Push right
+  } else if (minDist === rightDist && rightDist < buffer) {
+    forceX = -1; // Push left
+  } else if (minDist === topDist && topDist < buffer) {
+    forceY = 1; // Push down
+  } else if (minDist === bottomDist && bottomDist < buffer) {
+    forceY = -1; // Push up
+  }
+
+  // If in a tight corner (very close to multiple walls), bias toward center
+  const isInTightCorner =
+    (leftDist < buffer * 0.3 || rightDist < buffer * 0.3) &&
+    (topDist < buffer * 0.3 || bottomDist < buffer * 0.3);
+
+  if (isInTightCorner) {
+    const centerX = WorldConfig.world.width / 2;
+    const centerY = WorldConfig.world.height / 2;
+    const toCenterX = centerX - pos.x;
+    const toCenterY = centerY - pos.y;
+    const centerDist = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
+
+    if (centerDist > 0.01) {
+      forceX = toCenterX / centerDist;
+      forceY = toCenterY / centerDist;
+    }
+  }
+
+  // Fallback to center if no force
+  if (Math.abs(forceX) < 0.01 && Math.abs(forceY) < 0.01) {
+    const centerX = WorldConfig.world.width / 2;
+    const centerY = WorldConfig.world.height / 2;
+    forceX = (centerX - pos.x) / Math.max(centerX, centerY);
+    forceY = (centerY - pos.y) / Math.max(centerX, centerY);
+  }
+
+  const result = vec.make(forceX, forceY);
+  return vec.length(result) > 0.01
+    ? vec.normalize(result, vec.make(0, 0))
+    : vec.make(0, 1);
 }
 
 function evalWander(o: WorldObject, dt: number): SteeringOutput | null {
@@ -134,7 +178,6 @@ function evalWander(o: WorldObject, dt: number): SteeringOutput | null {
     (o.components.WanderSteering as WanderSteeringComponent) || undefined;
   if (!w) return null;
 
-  // Gather params with fallback to Locomotion
   const wanderRadius = w?.radius;
   const wanderDistance = w?.distance;
   const wanderJitter = w?.jitter;
@@ -363,23 +406,25 @@ function evalBoundaryAvoid(o: WorldObject): SteeringOutput | null {
   const limits = getLimits(o);
   const b =
     (o.components.BoundaryAvoidance as BoundaryAvoidanceComponent) || undefined;
-  const loco = (o.components.Locomotion as LocomotionComponent) || undefined;
   // We can still run with defaults if neither exists
-  const buffer = b?.buffer ?? loco?.boundaryBuffer ?? 60;
+  const buffer = b?.buffer ?? 60;
   const lookAhead =
     b?.lookAhead ??
-    loco?.boundaryLookAhead ??
     clamp(vec.length(kin.velocity) * 0.8 + limits.maxSpeed * 0.2, 60, 220);
-  const strengthBase =
-    b?.strength ?? loco?.boundaryStrength ?? limits.maxAcceleration * 0.9;
-  const angularScale = b?.angularScale ?? loco?.boundaryAngularScale ?? 0.6;
+  const strengthBase = b?.strength ?? limits.maxAcceleration * 0.4; // Further reduced strength
+  const angularScale = b?.angularScale ?? 0.3; // Further reduced angular influence
   const debugColor = b?.debugColor ?? "#AA66FF";
-  const priority = b?.priority ?? 100; // high
+  const priority = b?.priority ?? 150; // High but not overwhelming
 
   const safeMinX = buffer;
   const safeMinY = buffer;
   const safeMaxX = WorldConfig.world.width - buffer;
   const safeMaxY = WorldConfig.world.height - buffer;
+
+  // Check current position proximity to walls
+  const currentProximity = boundaryProximity(pos, buffer);
+
+  // Check ahead position
   const speed = vec.length(kin.velocity);
   const forward =
     speed > 1
@@ -395,18 +440,38 @@ function evalBoundaryAvoid(o: WorldObject): SteeringOutput | null {
   const clampedY = clamp(ahead.y, safeMinY, safeMaxY);
   const offset = vec.make(clampedX - ahead.x, clampedY - ahead.y);
 
-  if (Math.abs(offset.x) < 0.001 && Math.abs(offset.y) < 0.001) return null;
+  let avoidDir = vec.make(0, 0);
+  let proximity = 0;
 
-  const proximity =
-    1 -
-    clamp01(
-      Math.min(
-        Math.min((ahead.x - safeMinX) / buffer, (safeMaxX - ahead.x) / buffer),
-        Math.min((ahead.y - safeMinY) / buffer, (safeMaxY - ahead.y) / buffer)
-      )
-    );
-  const avoidDir = vec.normalize(offset, vec.make(0, 0));
-  const accelMag = strengthBase * clamp01(proximity + 0.2);
+  // Only trigger avoidance if actually needed
+  if (currentProximity > 0.8) {
+    // Very close to wall - use strong immediate avoidance
+    avoidDir = inwardNormal(pos, buffer);
+    proximity = currentProximity;
+  } else if (Math.abs(offset.x) > 0.001 || Math.abs(offset.y) > 0.001) {
+    // Look-ahead avoidance - gentle steering
+    avoidDir = vec.normalize(offset, vec.make(0, 0));
+    proximity =
+      0.5 *
+      (1 -
+        clamp01(
+          Math.min(
+            Math.min(
+              (ahead.x - safeMinX) / buffer,
+              (safeMaxX - ahead.x) / buffer
+            ),
+            Math.min(
+              (ahead.y - safeMinY) / buffer,
+              (safeMaxY - ahead.y) / buffer
+            )
+          )
+        ));
+  } else {
+    return null; // No avoidance needed
+  }
+
+  // Smooth acceleration based on proximity (not binary)
+  const accelMag = strengthBase * Math.pow(clamp01(proximity), 2); // Quadratic falloff
   const linear = vec.scale(avoidDir, accelMag, vec.make(0, 0));
 
   const desiredOrientation = Math.atan2(avoidDir.y, avoidDir.x);
@@ -430,25 +495,22 @@ function aggregate(
   contribs: SteeringOutput[],
   limits: ReturnType<typeof getLimits>
 ): SteeringOutput {
-  // Downscale wander when a high-priority avoidance is present
+  // Gentle downscaling when avoidance is present (don't eliminate wander entirely)
   const hasAvoid = contribs.some(
     (c) => c.name === "Avoid" && (c.priority ?? 0) >= 100
   );
   if (hasAvoid) {
     for (const c of contribs) {
-      if (c.name === "Wander") c.weight = (c.weight ?? 1) * 0.2; // heavily suppress wander near walls
+      if (c.name === "Wander") c.weight = (c.weight ?? 1) * 0.5; // gentle suppression instead of heavy
     }
   }
+
   const eps2 = 1e-4;
   const significant = (s: SteeringOutput) =>
     Math.abs(s.angular) > 1e-3 || magnitude2(s.linear) > eps2;
-  const sorted = contribs
-    .filter(significant)
-    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-  const top = sorted[0];
-  if (top && (top.priority ?? 0) >= 50) {
-    return clampSteering(top, limits);
-  }
+  contribs.filter(significant);
+
+  // Use blended approach for smoother behavior
   let lin = vec.make(0, 0);
   let ang = 0;
   let totalW = 0;

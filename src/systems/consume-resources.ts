@@ -29,22 +29,7 @@ export function consumeResourcesSystem(objs: WorldObject[], dt: number) {
         if (!pr.provides.includes(need.name)) continue;
         if (need.value >= need.max) continue;
 
-        const oldValue = need.value;
         need.value = Math.min(need.max, need.value + pr.providedPerSecond * dt);
-
-        // Log significant increases for debugging
-        if (
-          need.value >= need.max * need.satiatedAtFraction &&
-          oldValue < need.max * need.satiatedAtFraction
-        ) {
-          console.log(
-            `Entity ${needer.id} ${
-              need.name
-            } reached satiation: ${need.value.toFixed(1)}/${
-              need.max
-            } from provider ${provider.id}`
-          );
-        }
       }
     }
   }

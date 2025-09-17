@@ -1,4 +1,4 @@
-import type { Resources } from "../components/passive-resource-provider";
+import type { Resources } from "../components/behaviour/passive-resource-provider";
 import { query, type WorldObject } from "../world-object";
 
 export function seeksNeedsSystem(objs: WorldObject[], _dt: number) {
@@ -26,9 +26,6 @@ export function seeksNeedsSystem(objs: WorldObject[], _dt: number) {
       );
 
       if (soughtIsSatiated && othersOk) {
-        console.log(
-          `Entity ${seeker.id} returning to Wander: ${sought} satiated`
-        );
         seeker.components.Behaviour = {
           mode: "Wander",
           wanderAngle: Math.random() * 2 - 1,
@@ -73,10 +70,6 @@ export function seeksNeedsSystem(objs: WorldObject[], _dt: number) {
     });
     const targetProvider = providers[0];
 
-    // Switch mode/state; persist parameters in Locomotion; record which need we're seeking
-    console.log(
-      `Entity ${seeker.id} switching to Seek: targeting ${targetProvider.id} for ${nowWants}`
-    );
     seeker.components.Behaviour = {
       mode: "Seek",
       targetId: targetProvider.id,

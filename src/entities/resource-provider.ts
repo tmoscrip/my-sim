@@ -7,24 +7,6 @@ import {
 import type { EntityFactory } from "./types";
 import { WorldConfig } from "../config";
 
-function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
-  const pos = o.components.Position;
-  const ren = o.components.Render2D;
-  if (!pos || !ren) return;
-
-  const sp = WorldConfig.worldToScreen(pos.x, pos.y);
-  const rPx = WorldConfig.scalarToPixels(ren.radius);
-
-  ctx.beginPath();
-  ctx.arc(sp.x, sp.y, rPx, 0, Math.PI * 2);
-  ctx.fillStyle = ren.colour;
-  ctx.fill();
-
-  ctx.strokeStyle = "black";
-  ctx.lineWidth = 5;
-  ctx.stroke();
-}
-
 export const FoodResource: EntityFactory = {
   create: (entityId: EntityId, radius: number = 50) => {
     var o = createObject(entityId);
@@ -33,9 +15,7 @@ export const FoodResource: EntityFactory = {
     const x = margin + Math.random() * (WorldConfig.world.width - 2 * margin);
     const y = margin + Math.random() * (WorldConfig.world.height - 2 * margin);
     addComponent(o, "Position", { x: x, y: y });
-    addComponent(o, "Render2D", {
-      radius: radius,
-      colour: "green",
+    addComponent(o, "CanvasRenderer", {
       render: render,
     });
     addComponent(o, "PassiveResourceProvider", {
@@ -55,9 +35,7 @@ export const WaterResource: EntityFactory = {
     const x = margin + Math.random() * (WorldConfig.world.width - 2 * margin);
     const y = margin + Math.random() * (WorldConfig.world.height - 2 * margin);
     addComponent(o, "Position", { x: x, y: y });
-    addComponent(o, "Render2D", {
-      radius: radius,
-      colour: "blue",
+    addComponent(o, "CanvasRenderer", {
       render: render,
     });
     addComponent(o, "PassiveResourceProvider", {
@@ -68,3 +46,21 @@ export const WaterResource: EntityFactory = {
     return o;
   },
 };
+
+function render(ctx: CanvasRenderingContext2D, o: WorldObject) {
+  const pos = o.components.Position;
+  const prov = o.components.PassiveResourceProvider;
+  if (!pos || !prov) return;
+
+  const sp = WorldConfig.worldToScreen(pos.x, pos.y);
+  const rPx = WorldConfig.scalarToPixels(prov.radius);
+
+  ctx.beginPath();
+  ctx.arc(sp.x, sp.y, rPx, 0, Math.PI * 2);
+  ctx.fillStyle = prov.provides.includes("Food") ? "green" : "blue";
+  ctx.fill();
+
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}

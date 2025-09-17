@@ -1,0 +1,21 @@
+import { WorldConfig } from "../config";
+import { addComponent, createObject } from "../world-object";
+import type { EntityFactory } from "./types";
+
+export const Player: EntityFactory = {
+  create: (entityId) => {
+    const o = createObject(entityId);
+    // Player entity might have components added later
+
+    addComponent(o, "Position", {
+      x: WorldConfig.world.width / 2,
+      y: WorldConfig.world.height / 2,
+    });
+    addComponent(o, "EmojiRenderer", {
+      character: "🧑",
+      sizeMultiplier: 2.0,
+    });
+
+    return o;
+  },
+};

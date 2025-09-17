@@ -1,6 +1,5 @@
 import type {
   MovementLimitsComponent,
-  LocomotionComponent,
   AlignSteeringComponent,
 } from "../components";
 import { vec } from "../math";
@@ -50,28 +49,20 @@ export function updateKinematicsSystem(objs: WorldObject[], dt: number) {
 export function getLimits(o: WorldObject) {
   const limits =
     (o.components.MovementLimits as MovementLimitsComponent) || undefined;
-  const loco = (o.components.Locomotion as LocomotionComponent) || undefined;
   return {
-    maxSpeed: limits?.maxSpeed ?? loco?.maxSpeed ?? 100,
-    maxAcceleration: limits?.maxAcceleration ?? loco?.maxAcceleration ?? 800,
-    maxRotation: limits?.maxRotation ?? loco?.maxRotation ?? 5,
-    maxAngularAcceleration:
-      limits?.maxAngularAcceleration ?? loco?.maxAngularAcceleration ?? 10,
+    maxSpeed: limits?.maxSpeed ?? 100,
+    maxAcceleration: limits?.maxAcceleration ?? 800,
+    maxRotation: limits?.maxRotation ?? 5,
+    maxAngularAcceleration: limits?.maxAngularAcceleration ?? 10,
     // align radii/time for fallback
     angularTargetRadius:
       (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularTargetRadius ??
-      loco?.angularTargetRadius ??
-      0.05,
+        ?.angularTargetRadius ?? 0.05,
     angularSlowRadius:
       (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularSlowRadius ??
-      loco?.angularSlowRadius ??
-      0.6,
+        ?.angularSlowRadius ?? 0.6,
     angularTimeToTarget:
       (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularTimeToTarget ??
-      loco?.angularTimeToTarget ??
-      0.1,
+        ?.angularTimeToTarget ?? 0.1,
   };
 }

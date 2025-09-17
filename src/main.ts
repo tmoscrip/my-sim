@@ -1,4 +1,3 @@
-import type { AssetDetails } from "./components/render-2d";
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
 import { consumeResourcesSystem } from "./systems/consume-resources";
@@ -10,9 +9,12 @@ import { query } from "./world-object";
 import { PointerHighlight } from "./entities/pointer";
 import { updateKinematicsSystem } from "./systems/kinematics";
 import { WorldConfig } from "./config";
+import { Player } from "./entities/player";
+import type { AssetDetails } from "./components/draw/sprite-renderer";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
+WorldConfig.configureCanvas(canvas);
 
 export const world: World = {
   objects: [],
@@ -26,33 +28,19 @@ export const world: World = {
   ],
 };
 
-// Configure canvas/backing store & world-to-screen transform
-WorldConfig.configureCanvas(canvas);
-window.addEventListener("resize", () => WorldConfig.refit());
-// Handle dpr changes (zoom/monitor move)
-matchMedia(
-  `(resolution: ${globalThis.devicePixelRatio || 1}dppx)`
-).addEventListener?.("change", () => WorldConfig.refit());
-
-world.objects.push(FoodResource.create(world.nextId++));
-world.objects.push(FoodResource.create(world.nextId++));
-world.objects.push(FoodResource.create(world.nextId++));
-world.objects.push(WaterResource.create(world.nextId++));
-world.objects.push(WaterResource.create(world.nextId++));
-world.objects.push(WaterResource.create(world.nextId++));
-
-const creatureCount = 8;
-for (let i = 0; i < creatureCount; i++) {
-  world.objects.push(Turtle.create(world.nextId++));
-}
-
-world.objects.push(PointerHighlight.create(world.nextId++));
+world.objects = [
+  PointerHighlight.create(world.nextId++), // Add pointer first so it's at the back
+  Player.create(world.nextId++),
+  ...Array.from({ length: 3 }, () => FoodResource.create(world.nextId++)),
+  ...Array.from({ length: 3 }, () => WaterResource.create(world.nextId++)),
+  ...Array.from({ length: 8 }, () => Turtle.create(world.nextId++)),
+];
 
 // TODO: This breaks if an asset is added later
 const assetNames = Array.from(
   new Set(
     world.objects
-      .map((o) => o.components.Render2D?.asset)
+      .map((o) => o.components.SpriteRenderer?.asset)
       .filter((a): a is AssetDetails => !!a)
       .map((a) => a.path)
   )
@@ -128,6 +116,12 @@ canvas.addEventListener("mouseup", () => {
   pointer.isDown = false;
 });
 
+window.addEventListener("resize", () => WorldConfig.refit());
+matchMedia(
+  `(resolution: ${globalThis.devicePixelRatio || 1}dppx)`
+).addEventListener?.("change", () => WorldConfig.refit());
+
+// Entry point
 (async function init() {
   await preloadAssets(assetNames);
   loop();
