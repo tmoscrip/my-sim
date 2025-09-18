@@ -15,6 +15,23 @@ export const Player: EntityFactory = {
       character: "🧑",
       sizeMultiplier: 2.0,
     });
+    addComponent(o, "Kinematics", {
+      velocity: { x: 0, y: 0 },
+      orientation: 0,
+      rotation: 0,
+    });
+    addComponent(o, "PlayerControl", {
+      moveUp: false,
+      moveDown: false,
+      moveLeft: false,
+      moveRight: false,
+    });
+    addComponent(o, "MovementLimits", {
+      maxSpeed: 1000,
+      maxAcceleration: 2000,
+      maxRotation: 5.0,
+      maxAngularAcceleration: 10.0,
+    });
 
     return o;
   },

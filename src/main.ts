@@ -1,7 +1,6 @@
 import { FoodResource, Turtle, WaterResource } from "./entities";
 import { preloadAssets, renderObjects } from "./render";
 import { consumeResourcesSystem } from "./systems/consume-resources";
-import { behaviourSystem } from "./systems/steering";
 import { needsSystem } from "./systems/needs";
 import type { World } from "./types";
 import { seeksNeedsSystem } from "./systems/seek-needs";
@@ -11,6 +10,9 @@ import { updateKinematicsSystem } from "./systems/kinematics";
 import { WorldConfig } from "./config";
 import { Player } from "./entities/player";
 import type { AssetDetails } from "./components/draw/sprite-renderer";
+import { attachKeyboard } from "./components/input/player-control";
+import { playerControlSystem } from "./systems/player-control";
+import { steeringSystem } from "./systems/steering-output";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -20,10 +22,11 @@ export const world: World = {
   objects: [],
   nextId: 1,
   systems: [
+    playerControlSystem,
+    steeringSystem,
     needsSystem,
     seeksNeedsSystem,
     consumeResourcesSystem,
-    behaviourSystem, // Process behaviors to produce steering forces
     updateKinematicsSystem, // Integrate kinematics with accumulated steering
   ],
 };
@@ -31,8 +34,8 @@ export const world: World = {
 world.objects = [
   PointerHighlight.create(world.nextId++), // Add pointer first so it's at the back
   Player.create(world.nextId++),
-  ...Array.from({ length: 3 }, () => FoodResource.create(world.nextId++)),
-  ...Array.from({ length: 3 }, () => WaterResource.create(world.nextId++)),
+  // ...Array.from({ length: 3 }, () => FoodResource.create(world.nextId++)),
+  // ...Array.from({ length: 3 }, () => WaterResource.create(world.nextId++)),
   ...Array.from({ length: 8 }, () => Turtle.create(world.nextId++)),
 ];
 

@@ -1,7 +1,5 @@
-import type {
-  MovementLimitsComponent,
-  AlignSteeringComponent,
-} from "../components";
+import type { MovementLimitsComponent } from "../components";
+import type { SteeringOutputComponent } from "../components/physics/steering";
 import { vec } from "../math";
 import { type WorldObject, query } from "../world-object";
 
@@ -11,26 +9,27 @@ export function updateKinematicsSystem(objs: WorldObject[], dt: number) {
     const kin = o.components.Kinematics!;
     const pos = o.components.Position!;
 
-    const steering = o.components.Steering || {
-      linear: vec.make(0, 0),
+    const steering = (o.components
+      .SteeringOutput as SteeringOutputComponent) || {
+      linear: { x: 0, y: 0 },
       angular: 0,
     };
 
     const limits = getLimits(o);
 
-    const linearDamping = 0.8;
-    const angularDamping = 0.9;
-
     // Integrate linear velocity
-    kin.velocity.x += (steering.linear.x - linearDamping * kin.velocity.x) * dt;
-    kin.velocity.y += (steering.linear.y - linearDamping * kin.velocity.y) * dt;
+    kin.velocity.x +=
+      (steering.linear.x - limits.linearDamping * kin.velocity.x) * dt;
+    kin.velocity.y +=
+      (steering.linear.y - limits.linearDamping * kin.velocity.y) * dt;
 
     // Integrate position
     pos.x += kin.velocity.x * dt;
     pos.y += kin.velocity.y * dt;
 
     // Integrate angular velocity and orientation
-    kin.rotation += (steering.angular - angularDamping * kin.rotation) * dt;
+    kin.rotation +=
+      (steering.angular - limits.angularDamping * kin.rotation) * dt;
     kin.orientation += kin.rotation * dt;
 
     // Wrap orientation to [-PI, PI]
@@ -54,15 +53,7 @@ export function getLimits(o: WorldObject) {
     maxAcceleration: limits?.maxAcceleration ?? 800,
     maxRotation: limits?.maxRotation ?? 5,
     maxAngularAcceleration: limits?.maxAngularAcceleration ?? 10,
-    // align radii/time for fallback
-    angularTargetRadius:
-      (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularTargetRadius ?? 0.05,
-    angularSlowRadius:
-      (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularSlowRadius ?? 0.6,
-    angularTimeToTarget:
-      (o.components.AlignSteering as AlignSteeringComponent)
-        ?.angularTimeToTarget ?? 0.1,
+    linearDamping: limits?.linearDamping ?? 5.8,
+    angularDamping: limits?.angularDamping ?? 0.9,
   };
 }

@@ -5,10 +5,6 @@ export type { SpriteRendererComponent } from "./draw/sprite-renderer";
 export type { BehaviourComponent } from "./behaviour/behaviour";
 export type { PassiveResourceProvider } from "./behaviour/passive-resource-provider";
 export type { MovementLimitsComponent } from "./physics/movement-limits";
-export type { WanderSteeringComponent } from "./physics/wander-steering";
-export type { ArriveSteeringComponent } from "./physics/arrive-steering";
-export type { BoundaryAvoidanceComponent } from "./physics/boundary-avoidance";
-export type { AlignSteeringComponent } from "./physics/align-steering";
 
 import type { PositionComponent } from "./position";
 import type { CanvasRendererComponent } from "./draw/canvas-renderer";
@@ -21,10 +17,13 @@ import type { PointerInputComponent } from "./input/pointer-input";
 import type { ClickableComponent } from "./clickable";
 import type { KinematicsComponent } from "./physics/kinematic";
 import type { MovementLimitsComponent } from "./physics/movement-limits";
-import type { WanderSteeringComponent } from "./physics/wander-steering";
-import type { ArriveSteeringComponent } from "./physics/arrive-steering";
-import type { BoundaryAvoidanceComponent } from "./physics/boundary-avoidance";
-import type { AlignSteeringComponent } from "./physics/align-steering";
+import type { PlayerControlComponent } from "./input/player-control";
+import type {
+  FleeFromPlayerComponent,
+  KinematicSeekComponent,
+  KinematicSteeringOutputComponent,
+  SteeringOutputComponent,
+} from "./physics/steering";
 
 export type Components = {
   Position: PositionComponent;
@@ -37,11 +36,12 @@ export type Components = {
   PointerInput: PointerInputComponent;
   Clickable: ClickableComponent;
   Kinematics: KinematicsComponent;
+  SteeringOutput: SteeringOutputComponent;
+  KinematicSteeringOutput: KinematicSteeringOutputComponent;
   MovementLimits: MovementLimitsComponent;
-  WanderSteering: WanderSteeringComponent;
-  ArriveSteering: ArriveSteeringComponent;
-  BoundaryAvoidance: BoundaryAvoidanceComponent;
-  AlignSteering: AlignSteeringComponent;
+  PlayerControl: PlayerControlComponent;
+  FleeFromPlayer: FleeFromPlayerComponent;
+  KinematicSeek: KinematicSeekComponent;
 };
 
 export type ComponentKey = keyof Components;

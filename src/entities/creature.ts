@@ -29,73 +29,51 @@ export const Turtle: EntityFactory = {
       orientation: 0,
       rotation: 0,
     });
-    addComponent(o, "Clickable", {
-      onClick: () => {
-        o.debug = !o.debug;
-      },
+    addComponent(o, "SteeringOutput", {
+      linear: { x: 0, y: 0 },
+      angular: 0,
     });
+    // addComponent(o, "Clickable", {
+    //   onClick: () => {
+    //     o.debug = !o.debug;
+    //   },
+    // });
     addComponent(o, "MovementLimits", {
-      maxSpeed: 110,
-      maxAcceleration: 900,
-      maxRotation: 5.0,
+      maxSpeed: 200,
+      maxAcceleration: 200,
+      maxRotation: 23.0,
       maxAngularAcceleration: 10.0,
-    });
-    addComponent(o, "WanderSteering", {
-      radius: 108,
-      distance: 60,
-      jitter: 4.4,
-      timeToTarget: 0.25,
-      decayPerSec: 2.0,
-      maxArc: 1.2,
-      cruiseSpeed: 110,
-      weight: 1,
-      priority: 10,
-      debugColor: "#FF4DFF",
-    });
-    addComponent(o, "ArriveSteering", {
-      targetRadius: 6,
-      slowRadius: 40,
-      timeToTarget: 0.25,
-      weight: 1,
-      priority: 20,
-      debugColor: "#66FF66",
-    });
-    addComponent(o, "AlignSteering", {
-      maxRotation: 5.0,
-      maxAngularAcceleration: 10.0,
-      angularTargetRadius: 0.05,
-      angularSlowRadius: 0.6,
-      angularTimeToTarget: 0.1,
-    });
-    addComponent(o, "BoundaryAvoidance", {
-      buffer: 30,
-      strength: 4900,
-      angularScale: 23.6,
-      priority: 200,
-      lookAhead: 80,
-      debugColor: "#AA66FF",
+      linearDamping: 1.8,
     });
     addComponent(o, "Behaviour", { mode: "Wander" });
-    addComponent(o, "Needs", [
-      {
-        name: "Water",
-        value: 80 + Math.random() * 20,
-        min: 0,
-        max: 100,
-        lossPerSecond: 5 + Math.random() * 3,
-        seekAtFraction: 0.2,
-        satiatedAtFraction: 0.9,
-      },
-      {
-        name: "Food",
-        value: 40 + Math.random() * 20,
-        min: 0,
-        max: 100,
-        lossPerSecond: 2 + Math.random() * 2,
-        seekAtFraction: 0.3,
-        satiatedAtFraction: 0.9,
-      },
-    ]);
+    // addComponent(o, "FleeFromPlayer", {
+    //   safeDistance: 500,
+    // });
+    addComponent(o, "KinematicSeek", {
+      maxSpeed: 2 + Math.random(),
+      arriveRadius: 10,
+      timeToTarget: 0.1,
+    });
+    // addComponent(o, "Needs", [
+    //   {
+    //     name: "Water",
+    //     value: 80 + Math.random() * 20,
+    //     min: 0,
+    //     max: 100,
+    //     lossPerSecond: 5 + Math.random() * 3,
+    //     seekAtFraction: 0.2,
+    //     satiatedAtFraction: 0.9,
+    //   },
+    //   {
+    //     name: "Food",
+    //     value: 40 + Math.random() * 20,
+    //     min: 0,
+    //     max: 100,
+    //     lossPerSecond: 2 + Math.random() * 2,
+    //     seekAtFraction: 0.3,
+    //     satiatedAtFraction: 0.9,
+    //   },
+    // ]);
     return o;
   },
 };

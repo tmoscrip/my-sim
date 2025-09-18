@@ -5,4 +5,7 @@ export type MovementLimitsComponent = {
   // Angular caps
   maxRotation: number; // rad/s
   maxAngularAcceleration: number; // rad/s^2
+
+  linearDamping?: number; // per second
+  angularDamping?: number; // per second
 };
