@@ -17,11 +17,41 @@ export function updateKinematicsSystem(objs: WorldObject[], dt: number) {
 
     const limits = getLimits(o);
 
-    // Integrate linear velocity
-    kin.velocity.x +=
-      (steering.linear.x - limits.linearDamping * kin.velocity.x) * dt;
-    kin.velocity.y +=
-      (steering.linear.y - limits.linearDamping * kin.velocity.y) * dt;
+    // Integrate linear velocity based on damping mode
+    const ax = steering.linear.x;
+    const ay = steering.linear.y;
+    const hasInput = ax * ax + ay * ay > 1e-6;
+
+    switch (limits.dampingMode) {
+      case "Drag": // Mode 1: Viscous drag (original)
+        kin.velocity.x += (ax - limits.linearDamping * kin.velocity.x) * dt;
+        kin.velocity.y += (ay - limits.linearDamping * kin.velocity.y) * dt;
+        break;
+
+      case "Friction": // Mode 2: Friction only when no input
+        if (hasInput) {
+          kin.velocity.x += ax * dt;
+          kin.velocity.y += ay * dt;
+        } else {
+          const decay = Math.exp(-limits.linearDamping * dt);
+          kin.velocity.x *= decay;
+          kin.velocity.y *= decay;
+        }
+        break;
+
+      case "Hybrid": // Mode 3: Light drag + friction
+      default:
+        if (hasInput) {
+          const lightDrag = 0.15 * limits.linearDamping;
+          kin.velocity.x += (ax - lightDrag * kin.velocity.x) * dt;
+          kin.velocity.y += (ay - lightDrag * kin.velocity.y) * dt;
+        } else {
+          const decay = Math.exp(-limits.linearDamping * dt);
+          kin.velocity.x *= decay;
+          kin.velocity.y *= decay;
+        }
+        break;
+    }
 
     // Integrate position
     pos.x += kin.velocity.x * dt;
@@ -55,5 +85,6 @@ export function getLimits(o: WorldObject) {
     maxAngularAcceleration: limits?.maxAngularAcceleration ?? 10,
     linearDamping: limits?.linearDamping ?? 5.8,
     angularDamping: limits?.angularDamping ?? 0.9,
+    dampingMode: limits?.dampingMode ?? "hybrid",
   };
 }

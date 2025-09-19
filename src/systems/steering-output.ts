@@ -66,14 +66,27 @@ function fleeFromPlayer(
         angular: 0,
       };
     } else if (distance >= fleeComp.safeDistance) {
-      // slow to a stop when outside safe distance
-      return {
-        linear: {
-          x: 0,
-          y: 0,
-        },
-        angular: 0,
-      };
+      // Outside safe distance: brake to a stop
+      const kin = o.components.Kinematics;
+      const vel = kin?.velocity || { x: 0, y: 0 };
+
+      // If already slow enough, stop completely
+      if (Math.abs(vel.x) < 1e-3 && Math.abs(vel.y) < 1e-3) {
+        return { linear: { x: 0, y: 0 }, angular: 0 };
+      }
+
+      // Apply braking force opposite to velocity
+      const speed = Math.hypot(vel.x, vel.y);
+      if (speed > 0) {
+        const brakeForce = Math.min(limits.maxAcceleration, speed * 10); // aggressive braking
+        const brakeDir = {
+          x: -(vel.x / speed) * brakeForce,
+          y: -(vel.y / speed) * brakeForce,
+        };
+        return { linear: brakeDir, angular: 0 };
+      }
+
+      return { linear: { x: 0, y: 0 }, angular: 0 };
     }
   }
 

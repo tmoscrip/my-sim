@@ -11,8 +11,9 @@ import { WorldConfig } from "./config";
 import { Player } from "./entities/player";
 import type { AssetDetails } from "./components/draw/sprite-renderer";
 import { attachKeyboard } from "./components/input/player-control";
-import { playerControlSystem } from "./systems/player-control";
+import { steerPlayerSystem } from "./systems/player-control";
 import { steeringSystem } from "./systems/steering-output";
+import { Rabbit } from "./entities/creature";
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -22,21 +23,22 @@ export const world: World = {
   objects: [],
   nextId: 1,
   systems: [
-    playerControlSystem,
+    steerPlayerSystem,
     steeringSystem,
     needsSystem,
     seeksNeedsSystem,
     consumeResourcesSystem,
-    updateKinematicsSystem, // Integrate kinematics with accumulated steering
+    updateKinematicsSystem,
   ],
 };
 
 world.objects = [
-  PointerHighlight.create(world.nextId++), // Add pointer first so it's at the back
+  PointerHighlight.create(world.nextId++),
   Player.create(world.nextId++),
   // ...Array.from({ length: 3 }, () => FoodResource.create(world.nextId++)),
   // ...Array.from({ length: 3 }, () => WaterResource.create(world.nextId++)),
   ...Array.from({ length: 8 }, () => Turtle.create(world.nextId++)),
+  ...Array.from({ length: 16 }, () => Rabbit.create(world.nextId++)),
 ];
 
 // TODO: This breaks if an asset is added later

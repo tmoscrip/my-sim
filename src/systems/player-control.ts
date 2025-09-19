@@ -2,10 +2,10 @@ import { getMoveVector } from "../components/input/player-control";
 import { query, type WorldObject } from "../world-object";
 import { getLimits } from "./kinematics";
 
-export function playerControlSystem(objs: WorldObject[], dt: number) {
-  const players = query(objs, "Position", "Kinematics", "PlayerControl");
+export function steerPlayerSystem(objs: WorldObject[], dt: number) {
+  const players = query(objs, "Position", "SteeringOutput", "PlayerControl");
   for (const player of players) {
-    const { Kinematics, PlayerControl } = player.components;
+    const { SteeringOutput, PlayerControl } = player.components;
     const moveVec = getMoveVector();
 
     if (PlayerControl) {
@@ -18,9 +18,7 @@ export function playerControlSystem(objs: WorldObject[], dt: number) {
     const limits = getLimits(player);
     const accelMag = limits.maxAcceleration ?? 800;
 
-    if (moveVec.x !== 0 || moveVec.y !== 0) {
-      Kinematics.velocity.x += moveVec.x * accelMag * dt;
-      Kinematics.velocity.y += moveVec.y * accelMag * dt;
-    }
+    SteeringOutput.linear.x = moveVec.x * accelMag;
+    SteeringOutput.linear.y = moveVec.y * accelMag;
   }
 }

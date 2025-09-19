@@ -26,9 +26,33 @@
         border: 2px solid #333;
         cursor: none;
       }
+
+      #menu {
+        background-color: #333;
+        width: 300px;
+        position: absolute;
+        padding: 10px;
+        top: 10px;
+        left: 10px;
+        color: white;
+        font-family: sans-serif;
+        z-index: 10;
+      }
     </style>
   </head>
   <body>
+    <div id="menu">
+      Linear Damping:
+      <input
+        type="range"
+        id="linearDamping"
+        name="linearDamping"
+        min="0"
+        max="10"
+        step="0.1"
+        value="4"
+      />
+    </div>
     <div id="app"><canvas id="canvas"></canvas></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

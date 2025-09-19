@@ -77,3 +77,50 @@ export const Turtle: EntityFactory = {
     return o;
   },
 };
+
+export const Rabbit: EntityFactory = {
+  create: (entityId: EntityId) => {
+    var o = createObject(entityId);
+
+    const spawnMargin = 80;
+    const xMin = spawnMargin;
+    const yMin = spawnMargin;
+    const xMax = WorldConfig.world.width - spawnMargin;
+    const yMax = WorldConfig.world.height - spawnMargin;
+    addComponent(o, "Position", {
+      x: xMin + Math.random() * Math.max(0, xMax - xMin),
+      y: yMin + Math.random() * Math.max(0, yMax - yMin),
+    });
+    addComponent(o, "SpriteRenderer", {
+      asset: {
+        path: "rabbit.svg",
+        xOffsetPx: 0,
+        yOffsetPx: -12,
+      },
+      staticRotation: true,
+    });
+    addComponent(o, "Kinematics", {
+      velocity: { x: 0, y: 0 },
+      orientation: 0,
+      rotation: 0,
+    });
+    addComponent(o, "SteeringOutput", {
+      linear: { x: 0, y: 0 },
+      angular: 0,
+    });
+    addComponent(o, "MovementLimits", {
+      maxSpeed: 200,
+      maxAcceleration: 2000,
+      maxRotation: 23.0,
+      maxAngularAcceleration: 10.0,
+      linearDamping: 1.8,
+      dampingMode: "Friction",
+    });
+    addComponent(o, "Behaviour", { mode: "Wander" });
+    addComponent(o, "FleeFromPlayer", {
+      isFleeing: false,
+      safeDistance: 100,
+    });
+    return o;
+  },
+};

@@ -26,11 +26,18 @@ export const Player: EntityFactory = {
       moveLeft: false,
       moveRight: false,
     });
+    addComponent(o, "SteeringOutput", {
+      linear: { x: 0, y: 0 },
+      angular: 0,
+    });
     addComponent(o, "MovementLimits", {
-      maxSpeed: 1000,
-      maxAcceleration: 2000,
+      maxSpeed: 200,
+      maxAcceleration: 400,
       maxRotation: 5.0,
       maxAngularAcceleration: 10.0,
+      linearDamping: 4.0,
+      angularDamping: 0.9,
+      dampingMode: "Friction",
     });
 
     return o;

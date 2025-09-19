@@ -24,7 +24,7 @@ export interface ActionState {
   value: number; // analog placeholder (0/1)
 }
 
-type KeyCode = string; // KeyboardEvent.code
+type KeyCode = string;
 
 interface Binding {
   action: InputAction;

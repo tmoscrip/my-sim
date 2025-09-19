@@ -1,4 +1,4 @@
-import { vec, type Vec2 } from "../../math";
+import { type Vec2 } from "../../math";
 import type { EntityId } from "../../world-object";
 
 export type SteeringOutputComponent = {
@@ -12,6 +12,7 @@ export type KinematicSteeringOutputComponent = {
 };
 
 export type FleeFromPlayerComponent = {
+  isFleeing?: boolean; // state tracking, currently unused
   safeDistance: number; // units
 };
 

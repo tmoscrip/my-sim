@@ -8,4 +8,6 @@ export type MovementLimitsComponent = {
 
   linearDamping?: number; // per second
   angularDamping?: number; // per second
+
+  dampingMode?: "Drag" | "Friction" | "Hybrid"; // default: Hybrid
 };
